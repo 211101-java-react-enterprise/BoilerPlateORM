@@ -2,6 +2,7 @@ package com.revature.boilerplateorm.daos;
 
 import com.revature.boilerplateorm.models.User;
 import com.revature.boilerplateorm.util.ConnectionFactory;
+import com.revature.boilerplateorm.util.QueryBuilder;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,14 +15,15 @@ public class UserDAO {
 
     public User save(User newUser) {
         try(Connection conn = ConnectionFactory.getInstance().getConnection()){
-            String sql = "insert into app_users (id, first_name, last_name, email, username, password) values (?, ?, ?, ?, ?, ?)";
+            QueryBuilder<User> qb = new QueryBuilder<>();
+            qb.setFieldInfo(newUser);
+            qb.setTableName(newUser);
+
+            String sql = "insert into ? (?) values (?)";
             PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, newUser.getId());
-            pstmt.setString(2, newUser.getFirstName());
-            pstmt.setString(3, newUser.getLastName());
-            pstmt.setString(4, newUser.getEmail());
-            pstmt.setString(5, newUser.getUsername());
-            pstmt.setString(6, newUser.getPassword());
+            pstmt.setString(1, qb.getTableName());
+            pstmt.setString(2, qb.getColumns());
+            pstmt.setString(3, qb.getColumnValues());
 
             int rowsInserted = pstmt.executeUpdate();
 
