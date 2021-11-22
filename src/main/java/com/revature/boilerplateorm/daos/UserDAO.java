@@ -15,9 +15,7 @@ public class UserDAO {
 
     public User save(User newUser) {
         try(Connection conn = ConnectionFactory.getInstance().getConnection()){
-            QueryBuilder<User> qb = new QueryBuilder<>();
-            qb.setFieldInfo(newUser);
-            qb.setTableName(newUser);
+            QueryBuilder qb = new QueryBuilder(newUser);
 
             String sql = "insert into ? (?) values (?)";
             PreparedStatement pstmt = conn.prepareStatement(sql);
