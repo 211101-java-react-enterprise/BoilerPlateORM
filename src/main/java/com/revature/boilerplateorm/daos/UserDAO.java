@@ -17,12 +17,11 @@ public class UserDAO {
         try(Connection conn = ConnectionFactory.getInstance().getConnection()){
             QueryBuilder qb = new QueryBuilder(newUser);
 
-            String sql = "insert into ? (?) values (?)";
+            String sql = "insert into %s (%s) values (%s)";
+            sql = String.format(sql,qb.getTableName(),qb.getColumns(), qb.getColumnValues());
+            System.out.println(sql);
             PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, qb.getTableName());
-            pstmt.setString(2, qb.getColumns());
-            pstmt.setString(3, qb.getColumnValues());
-
+            System.out.println(pstmt);
             int rowsInserted = pstmt.executeUpdate();
 
             if (rowsInserted != 0) {
