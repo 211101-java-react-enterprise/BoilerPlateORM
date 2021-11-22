@@ -35,13 +35,9 @@ public class BoilerPlateORMDriver {
         user.setUsername("danhtran123");
         user.setPassword("password");
 
-        QueryBuilder<User> qb = new QueryBuilder<>();
-
-        qb.setTableName(user);
+        QueryBuilder qb = new QueryBuilder(user);
 
         System.out.println(qb.getTableName());
-
-        qb.setFieldInfo(user);
 
         System.out.println(qb.getColumns());
         System.out.println(qb.getColumnValues());
