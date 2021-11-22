@@ -3,20 +3,32 @@ package com.revature.boilerplateorm.util;
 import com.revature.boilerplateorm.util.annotations.Column;
 import com.revature.boilerplateorm.util.annotations.Id;
 import com.revature.boilerplateorm.util.annotations.Table;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Field;
 
-public class QueryBuilder<T> {
+public class QueryBuilder {
 
+    Logger logger = LogManager.getLogger();
+    Object object;
     private String tableName = "";
     private String columns = "";
     private String columnValues = "";
 
+    public QueryBuilder() {
+
+    }
+    public QueryBuilder(Object object) {
+        this.object = object;
+        setTableName();
+        setFieldInfo();
+    }
+
     /**
      * Assign the table in which the object belongs to, to the class variable "tableName"
-     * @param object the object to find the particular table in the database it maps to.
      */
-    public void setTableName(T object) {
+    private void setTableName() {
         Class<?> clazz = null;
         try {
             clazz = Class.forName(object.getClass().getName());
@@ -27,15 +39,15 @@ public class QueryBuilder<T> {
                 tableName = clazz.getSimpleName();
             }
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
+        logger.info("Working on table: {}", tableName);
     }
 
     /**
      * Assign the field's column name and value to the class variables "columns" and "columnValues" respectively
-     * @param object The object to find field information for the database
      */
-    public void setFieldInfo(T object) {
+    private void setFieldInfo() {
 
         Field[] fields = object.getClass().getDeclaredFields();
         StringBuilder columnBuilder = new StringBuilder();
@@ -63,12 +75,16 @@ public class QueryBuilder<T> {
             try {
                 valueBuilder.append(field.get(object)).append(",");
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage());
             }
 
         }
+
         columns = columnBuilder.substring(0, columnBuilder.length()-1);
         columnValues = valueBuilder.substring(0, valueBuilder.length()-1);
+
+        logger.info("Column: {}", columns);
+        logger.info("Values: {}", columnValues);
     }
 
     public String getTableName() {
