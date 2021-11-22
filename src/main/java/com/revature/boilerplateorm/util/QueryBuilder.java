@@ -12,6 +12,10 @@ public class QueryBuilder<T> {
     private String columns = "";
     private String columnValues = "";
 
+    /**
+     * Assign the table in which the object belongs to, to the class variable "tableName"
+     * @param object the object to find the particular table in the database it maps to.
+     */
     public void setTableName(T object) {
         Class<?> clazz = null;
         try {
@@ -27,6 +31,10 @@ public class QueryBuilder<T> {
         }
     }
 
+    /**
+     * Assign the field's column name and value to the class variables "columns" and "columnValues" respectively
+     * @param object The object to find field information for the database
+     */
     public void setFieldInfo(T object) {
 
         Field[] fields = object.getClass().getDeclaredFields();
@@ -37,11 +45,13 @@ public class QueryBuilder<T> {
             boolean isPrimaryKey = false;
             field.setAccessible(true);
 
+            //check if current field is the primary key
             if(field.isAnnotationPresent(Id.class)) {
                 isPrimaryKey = true;
             }
 
             String dbName;
+            //find out the table name mapping to the current field
             if(field.isAnnotationPresent(Column.class)) {
                 Column column = field.getAnnotation(Column.class);
                 dbName = column.name();
