@@ -10,3 +10,6 @@ target/
 
 # Properties files
 *.properties
+
+# Log files
+*.log

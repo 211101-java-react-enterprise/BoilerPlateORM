@@ -1,10 +1,22 @@
 package com.revature.boilerplateorm.models;
 
-public class User {
+import com.revature.boilerplateorm.util.annotations.Column;
+import com.revature.boilerplateorm.util.annotations.Entity;
+import com.revature.boilerplateorm.util.annotations.Id;
+import com.revature.boilerplateorm.util.annotations.Table;
 
+@Entity
+@Table(name="user")
+public class User {
+    @Id
     private String id;
+
+    @Column(name = "first_name")
     private String firstName;
+
+    @Column(name = "last_name")
     private String lastName;
+
     private String email;
     private String username;
     private String password;
