@@ -1,6 +1,7 @@
 package com.revature.boilerplateorm;
 
 import com.revature.boilerplateorm.daos.GenericDAO;
+import com.revature.boilerplateorm.daos.UserDAO;
 import com.revature.boilerplateorm.models.User;
 import com.revature.boilerplateorm.util.ConnectionFactory;
 import org.apache.logging.log4j.LogManager;
@@ -24,9 +25,9 @@ public class BoilerPlateORMDriver {
     public static final Logger logger = LogManager.getLogger();
 
     public static void main(String[] args) {
-        GenericDAO<User> d = null;
+        UserDAO d = null;
         try(Connection conn = ConnectionFactory.getInstance().getConnection()){
-            d = new GenericDAO<User>(conn);
+            d = new UserDAO(conn);
             User u = new User();
             u.setEmail("example@email.com");
             u.setFirstName("Test");
