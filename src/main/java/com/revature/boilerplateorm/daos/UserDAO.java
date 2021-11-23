@@ -22,6 +22,16 @@ public class UserDAO extends GenericDAO{
             sql = String.format(sql,qb.getTableName(),qb.getPrimaryKey(), key);
             System.out.println(sql);
             PreparedStatement pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery();
+            if(rs.next())
+            return new User(
+            rs.getInt("id"),
+            rs.getString("first_name"),
+            rs.getString("last_name"),
+            rs.getString("email"),
+            rs.getString("username"),
+            rs.getString("password")
+            );
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -1,5 +1,6 @@
 package com.revature.boilerplateorm.daos;
 
+import com.revature.boilerplateorm.models.User;
 import com.revature.boilerplateorm.util.QueryBuilder;
 
 import java.sql.*;
@@ -28,6 +29,22 @@ public abstract class GenericDAO {
             if (rowsInserted != 0) {
                 return true;
             }
+        } catch (SQLException e) {
+            // TODO logging
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean update(int key,Object o){
+        try{
+        //Complete object updates only, use only if you have a whole object
+        QueryBuilder qb = new QueryBuilder(o);
+        String sql = "update %s set (%s) where %s = %d";
+        sql = String.format(sql, qb.getTableName(), qb.getColumns(), qb.getPrimaryKey(), key);
+
+        int rows = conn.prepareStatement(sql).executeUpdate();
+        if (rows > 0) return true;
         } catch (SQLException e) {
             // TODO logging
             e.printStackTrace();

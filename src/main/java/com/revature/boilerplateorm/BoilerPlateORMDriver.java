@@ -36,7 +36,10 @@ public class BoilerPlateORMDriver {
             u.setUsername("test");
             u.setLastName("testerson");
             //d.save(u);
-            d.find(1, u);
+            System.out.println(d.find(1, u));
+            u.setFirstName("asdf");
+            System.out.println(d.update(u.getId(), u));
+            System.out.println(d.find(1, u));
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Connection failed");
