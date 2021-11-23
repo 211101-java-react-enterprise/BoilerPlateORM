@@ -14,6 +14,7 @@ public class QueryBuilder {
     Logger logger = LogManager.getLogger();
     Object object;
     private String tableName = "";
+    private String primaryKey;
     private final ArrayList<String> columns = new ArrayList<>();
     private final ArrayList<String> columnValues = new ArrayList<>();
 
@@ -53,12 +54,11 @@ public class QueryBuilder {
         Field[] fields = object.getClass().getDeclaredFields();
 
         for(Field field : fields) {
-            boolean isPrimaryKey = false;
             field.setAccessible(true);
 
             //check if current field is the primary key
             if(field.isAnnotationPresent(Id.class)) {
-                isPrimaryKey = true;
+                primaryKey = field.getName();
             }
 
             String dbName;
@@ -91,6 +91,10 @@ public class QueryBuilder {
         return tableName;
     }
 
+    /**
+     * Converts the arrayListed columns appended together into a single string
+     * @return String value of a readable query component that consists of the columns
+     */
     public String getColumns() {
 
         StringBuilder columnBuilder = new StringBuilder();
@@ -103,6 +107,10 @@ public class QueryBuilder {
         return columnBuilder.substring(0, columnBuilder.length()-1);
     }
 
+    /**
+     * Converts the arrayListed column values appended together into a single string
+     * @return String value of a readable query component that consists of the column values
+     */
     public String getColumnValues() {
 
         StringBuilder valueBuilder = new StringBuilder();
@@ -113,6 +121,10 @@ public class QueryBuilder {
 
         logger.info("Value passed out is: " + valueBuilder.substring(0, valueBuilder.length()-1));
         return valueBuilder.substring(0,valueBuilder.length()-1);
+    }
+
+    public Object getPrimaryKey() {
+        return primaryKey;
     }
 
 }
