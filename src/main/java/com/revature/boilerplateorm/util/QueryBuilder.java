@@ -91,6 +91,10 @@ public class QueryBuilder {
         return tableName;
     }
 
+    /**
+     * Converts the arrayListed columns appended together into a single string
+     * @return String value of a readable query component that consists of the columns
+     */
     public String getColumns() {
 
         StringBuilder columnBuilder = new StringBuilder();
@@ -103,6 +107,10 @@ public class QueryBuilder {
         return columnBuilder.substring(0, columnBuilder.length()-1);
     }
 
+    /**
+     * Converts the arrayListed column values appended together into a single string
+     * @return String value of a readable query component that consists of the column values
+     */
     public String getColumnValues() {
 
         StringBuilder valueBuilder = new StringBuilder();
