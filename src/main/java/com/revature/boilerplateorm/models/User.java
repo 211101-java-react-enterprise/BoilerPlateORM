@@ -9,7 +9,7 @@ import com.revature.boilerplateorm.util.annotations.Table;
 @Table(name="users")
 public class User {
     @Id
-    private String id;
+    private int id;
 
     @Column(name = "first_name")
     private String firstName;
@@ -24,7 +24,7 @@ public class User {
     public User() {
 
     }
-    public User(String id, String firstName, String lastName, String email, String username, String password) {
+    public User(int id, String firstName, String lastName, String email, String username, String password) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -33,11 +33,11 @@ public class User {
         this.password = password;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -79,5 +79,17 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                '}';
     }
 }

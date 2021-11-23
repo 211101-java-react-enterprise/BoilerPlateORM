@@ -1,40 +1,40 @@
 package com.revature.boilerplateorm.daos;
 
 import com.revature.boilerplateorm.models.User;
-import com.revature.boilerplateorm.util.ConnectionFactory;
 import com.revature.boilerplateorm.util.QueryBuilder;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
+
+public class UserDAO extends GenericDAO{
+    private final Connection conn;
+
+    public UserDAO(Connection conn){
+        super(conn);
+        this.conn = conn;
+    }
 
 
-public class UserDAO {
-    //TODO, get a connection from a pool when calling this
-
-
-    public User save(User newUser) {
-        try(Connection conn = ConnectionFactory.getInstance().getConnection()){
-            QueryBuilder qb = new QueryBuilder(newUser);
-
-            String sql = "insert into %s (%s) values (%s)";
-            sql = String.format(sql,qb.getTableName(),qb.getColumns(), qb.getColumnValues());
+    public User find(int key, User user){
+        try {
+            //todo
+            QueryBuilder qb = new QueryBuilder(user);
+            String sql = "select * from %s where %s = %d";
+            sql = String.format(sql,qb.getTableName(),qb.getPrimaryKey(), key);
             System.out.println(sql);
             PreparedStatement pstmt = conn.prepareStatement(sql);
-            System.out.println(pstmt);
-            int rowsInserted = pstmt.executeUpdate();
-
-            if (rowsInserted != 0) {
-                return newUser;
-            }
-
+            ResultSet rs = pstmt.executeQuery();
+            if(rs.next())
+            return new User(
+            rs.getInt("id"),
+            rs.getString("first_name"),
+            rs.getString("last_name"),
+            rs.getString("email"),
+            rs.getString("username"),
+            rs.getString("password")
+            );
         } catch (SQLException e) {
-            // TODO logging
             e.printStackTrace();
-
         }
-
         return null;
-
     }
 }

@@ -1,17 +1,14 @@
 package com.revature.boilerplateorm;
 
+import com.revature.boilerplateorm.daos.GenericDAO;
 import com.revature.boilerplateorm.daos.UserDAO;
 import com.revature.boilerplateorm.models.User;
-import com.revature.boilerplateorm.util.QueryBuilder;
-import com.revature.boilerplateorm.util.annotations.Column;
-import com.revature.boilerplateorm.util.annotations.Id;
-import com.revature.boilerplateorm.util.annotations.Table;
+import com.revature.boilerplateorm.util.ConnectionFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class BoilerPlateORMDriver {
 
@@ -28,30 +25,25 @@ public class BoilerPlateORMDriver {
     public static final Logger logger = LogManager.getLogger();
 
     public static void main(String[] args) {
-        User user = new User();
-        user.setId("123");
-        user.setFirstName("danh");
-        user.setLastName("tran");
-        user.setEmail("danhtran1337@gmail.com");
-        user.setUsername("danhtran123");
-        user.setPassword("password");
-
-        QueryBuilder qb = new QueryBuilder(user);
-
-        User u = new User();
-        u.setEmail("example@email.com");
-        u.setFirstName("Test");
-        u.setId("asdawfrafsfawa");
-        u.setPassword("test");
-        u.setUsername("test");
-        u.setLastName("testerson");
-        UserDAO d = new UserDAO();
-        d.save(u);
-        System.out.println(qb.getTableName());
-
-        System.out.println(qb.getColumns());
-        System.out.println(qb.getColumnValues());
-
+        UserDAO d = null;
+        try(Connection conn = ConnectionFactory.getInstance().getConnection()){
+            d = new UserDAO(conn);
+            User u = new User();
+            u.setEmail("example@email.com");
+            u.setFirstName("Test");
+            u.setId(1);
+            u.setPassword("test");
+            u.setUsername("test");
+            u.setLastName("testerson");
+            //d.save(u);
+            System.out.println(d.find(1, u));
+            u.setFirstName("asdf");
+            System.out.println(d.update(u.getId(), u));
+            System.out.println(d.find(1, u));
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Connection failed");
+        }
     }
 
 }
