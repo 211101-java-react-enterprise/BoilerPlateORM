@@ -127,4 +127,12 @@ public class QueryBuilder {
         return primaryKey;
     }
 
+    public String getColumnEqualValues() {
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < columns.size(); i++) {
+            s.append(columns.get(i)).append(" = ").append(columnValues.get(i)).append(", ");
+        }
+        return s.substring(0, s.length()-2);
+    }
+
 }
