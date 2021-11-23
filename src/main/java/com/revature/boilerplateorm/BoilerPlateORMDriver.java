@@ -1,5 +1,6 @@
 package com.revature.boilerplateorm;
 
+import com.revature.boilerplateorm.daos.UserDAO;
 import com.revature.boilerplateorm.models.User;
 import com.revature.boilerplateorm.util.QueryBuilder;
 import com.revature.boilerplateorm.util.annotations.Column;
@@ -37,6 +38,15 @@ public class BoilerPlateORMDriver {
 
         QueryBuilder qb = new QueryBuilder(user);
 
+        User u = new User();
+        u.setEmail("example@email.com");
+        u.setFirstName("Test");
+        u.setId("asdawfrafsfawa");
+        u.setPassword("test");
+        u.setUsername("test");
+        u.setLastName("testerson");
+        UserDAO d = new UserDAO();
+        d.save(u);
         System.out.println(qb.getTableName());
 
         System.out.println(qb.getColumns());

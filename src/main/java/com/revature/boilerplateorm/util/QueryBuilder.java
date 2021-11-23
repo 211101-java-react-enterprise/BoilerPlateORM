@@ -7,14 +7,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 
 public class QueryBuilder {
 
     Logger logger = LogManager.getLogger();
     Object object;
     private String tableName = "";
-    private String columns = "";
-    private String columnValues = "";
+    private final ArrayList<String> columns = new ArrayList<>();
+    private final ArrayList<String> columnValues = new ArrayList<>();
 
     public QueryBuilder() {
 
@@ -50,8 +51,6 @@ public class QueryBuilder {
     private void setFieldInfo() {
 
         Field[] fields = object.getClass().getDeclaredFields();
-        StringBuilder columnBuilder = new StringBuilder();
-        StringBuilder valueBuilder = new StringBuilder();
 
         for(Field field : fields) {
             boolean isPrimaryKey = false;
@@ -70,18 +69,19 @@ public class QueryBuilder {
             } else {
                 dbName = field.getName();
             }
+            columns.add(dbName);
 
-            columnBuilder.append(dbName).append(",");
             try {
-                valueBuilder.append(field.get(object)).append(",");
+                columnValues.add(field.get(object).toString());
+
             } catch (IllegalAccessException e) {
                 logger.error(e.getMessage());
             }
 
         }
-
-        columns = columnBuilder.substring(0, columnBuilder.length()-1);
-        columnValues = valueBuilder.substring(0, valueBuilder.length()-1);
+        //valueBuilder.append(field.get(object)).append(",");
+        //columns = columnBuilder.substring(0, columnBuilder.length()-1);
+       // columnValues = valueBuilder.substring(0, valueBuilder.length()-1);
 
         logger.info("Column: {}", columns);
         logger.info("Values: {}", columnValues);
@@ -92,11 +92,27 @@ public class QueryBuilder {
     }
 
     public String getColumns() {
-        return columns;
+
+        StringBuilder columnBuilder = new StringBuilder();
+
+        for(int i = 0; i < columns.size(); i++) {
+            columnBuilder.append(columns.get(i)).append(",");
+        }
+
+        logger.info("Column passed out is: " + columnBuilder.substring(0, columnBuilder.length()-1));
+        return columnBuilder.substring(0, columnBuilder.length()-1);
     }
 
     public String getColumnValues() {
-        return columnValues;
+
+        StringBuilder valueBuilder = new StringBuilder();
+
+        for (int i = 0; i < columnValues.size(); i++) {
+            valueBuilder.append("'").append(columnValues.get(i)).append("',");
+        }
+
+        logger.info("Value passed out is: " + valueBuilder.substring(0, valueBuilder.length()-1));
+        return valueBuilder.substring(0,valueBuilder.length()-1);
     }
 
 }

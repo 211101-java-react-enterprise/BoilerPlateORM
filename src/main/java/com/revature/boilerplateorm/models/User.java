@@ -6,7 +6,7 @@ import com.revature.boilerplateorm.util.annotations.Id;
 import com.revature.boilerplateorm.util.annotations.Table;
 
 @Entity
-@Table(name="user")
+@Table(name="users")
 public class User {
     @Id
     private String id;
