@@ -1,17 +1,9 @@
 package com.revature.boilerplateorm;
 
-import com.revature.boilerplateorm.daos.UserDAO;
+import com.revature.boilerplateorm.daos.GenericDAO;
 import com.revature.boilerplateorm.models.User;
-import com.revature.boilerplateorm.util.QueryBuilder;
-import com.revature.boilerplateorm.util.annotations.Column;
-import com.revature.boilerplateorm.util.annotations.Id;
-import com.revature.boilerplateorm.util.annotations.Table;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
 
 public class BoilerPlateORMDriver {
 
@@ -28,16 +20,6 @@ public class BoilerPlateORMDriver {
     public static final Logger logger = LogManager.getLogger();
 
     public static void main(String[] args) {
-        User user = new User();
-        user.setId("123");
-        user.setFirstName("danh");
-        user.setLastName("tran");
-        user.setEmail("danhtran1337@gmail.com");
-        user.setUsername("danhtran123");
-        user.setPassword("password");
-
-        QueryBuilder qb = new QueryBuilder(user);
-
         User u = new User();
         u.setEmail("example@email.com");
         u.setFirstName("Test");
@@ -45,13 +27,9 @@ public class BoilerPlateORMDriver {
         u.setPassword("test");
         u.setUsername("test");
         u.setLastName("testerson");
-        UserDAO d = new UserDAO();
-        d.save(u);
-        System.out.println(qb.getTableName());
+        GenericDAO d = new GenericDAO();
 
-        System.out.println(qb.getColumns());
-        System.out.println(qb.getColumnValues());
-
+        d.find(1, u);
     }
 
 }

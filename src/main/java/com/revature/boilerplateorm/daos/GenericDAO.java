@@ -9,11 +9,11 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 
-public class UserDAO {
+public class GenericDAO {
     //TODO, get a connection from a pool when calling this
 
 
-    public User save(User newUser) {
+    public boolean save(User newUser) {
         try(Connection conn = ConnectionFactory.getInstance().getConnection()){
             QueryBuilder qb = new QueryBuilder(newUser);
 
@@ -25,7 +25,7 @@ public class UserDAO {
             int rowsInserted = pstmt.executeUpdate();
 
             if (rowsInserted != 0) {
-                return newUser;
+                return true;
             }
 
         } catch (SQLException e) {
@@ -34,7 +34,17 @@ public class UserDAO {
 
         }
 
-        return null;
+        return false;
 
+    }
+
+
+    public boolean find(int key, Object object){
+        System.out.println(key);
+        System.out.println(object.getClass().getSimpleName());
+        QueryBuilder qb = new QueryBuilder(object);
+        String sql = "select * from %s where %s = %d";
+        sql = String.format(sql,qb.getTableName(), qb.getPrimaryKey(), key);
+        return false;
     }
 }
