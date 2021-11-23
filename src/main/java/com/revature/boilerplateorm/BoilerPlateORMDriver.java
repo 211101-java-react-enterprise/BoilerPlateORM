@@ -2,8 +2,12 @@ package com.revature.boilerplateorm;
 
 import com.revature.boilerplateorm.daos.GenericDAO;
 import com.revature.boilerplateorm.models.User;
+import com.revature.boilerplateorm.util.ConnectionFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class BoilerPlateORMDriver {
 
@@ -20,16 +24,22 @@ public class BoilerPlateORMDriver {
     public static final Logger logger = LogManager.getLogger();
 
     public static void main(String[] args) {
-        User u = new User();
-        u.setEmail("example@email.com");
-        u.setFirstName("Test");
-        u.setId("asdawfrafsfawa");
-        u.setPassword("test");
-        u.setUsername("test");
-        u.setLastName("testerson");
-        GenericDAO d = new GenericDAO();
-
-        d.find(1, u);
+        GenericDAO<User> d = null;
+        try(Connection conn = ConnectionFactory.getInstance().getConnection()){
+            d = new GenericDAO<User>(conn);
+            User u = new User();
+            u.setEmail("example@email.com");
+            u.setFirstName("Test");
+            u.setId(1);
+            u.setPassword("test");
+            u.setUsername("test");
+            u.setLastName("testerson");
+            //d.save(u);
+            d.find(1, u);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Connection failed");
+        }
     }
 
 }

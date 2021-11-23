@@ -23,7 +23,7 @@ public class QueryBuilderTest {
     @Test
     public void test_setTableName_setsTableNameValueToUser_givenUserObject() {
 
-        User newUser = new User("1", "Danh", "Tran", "danhtran1337@gmail.com", "danhtran123", "password");
+        User newUser = new User(1, "Danh", "Tran", "danhtran1337@gmail.com", "danhtran123", "password");
         String expectedResult = "user";
         sut = new QueryBuilder(newUser);
 
@@ -47,7 +47,7 @@ public class QueryBuilderTest {
 
     @Test
     public void test_setFieldInfo_setsColumnsAndColumnValuesToUserValue_givenUserObject() {
-        User newUser = new User("1", "Danh", "Tran", "danhtran1337@gmail.com", "danhtran123", "password");
+        User newUser = new User(1, "Danh", "Tran", "danhtran1337@gmail.com", "danhtran123", "password");
         String expectedColumnsResult = "id,first_name,last_name,email,username,password";
         String expectedColumnValuesResult = "1,Danh,Tran,danhtran1337@gmail.com,danhtran123,password";
         sut = new QueryBuilder(newUser);
