@@ -18,6 +18,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class QueryBuilder {
 
@@ -90,6 +91,10 @@ public class QueryBuilder {
         for(Field field : fields) {
             field.setAccessible(true);
             try {
+                if(field.get(object) == null) {
+                    columnValues.add(null);
+                    continue;
+                }
                 columnValues.add(field.get(object).toString());
             } catch (IllegalAccessException e) {
                 logger.error(e.getMessage());
@@ -130,9 +135,6 @@ public class QueryBuilder {
         for (int i = 0; i < columnValues.size(); i++) {
             valueBuilder.append("'").append(columnValues.get(i)).append("',");
         }
-
-        System.out.println("Column size is: " + columnValues.size());
-        System.out.println("Builder is: " + valueBuilder);
         logger.info("Value passed out is: " + valueBuilder.substring(0, valueBuilder.length()-1));
         return valueBuilder.substring(0,valueBuilder.length()-1);
     }
@@ -150,18 +152,26 @@ public class QueryBuilder {
 
     public String getColumnEqualValues() {
         StringBuilder s = new StringBuilder();
-        for (int i = 0; i < columns.size(); i++) {
+        for (int i = 0; i < columnValues.size(); i++) {
+            //selective updates
+            if(columnValues.get(i) == null) {
+                logger.info("We're skipping this one " + columns.get(i) + " " + columnValues.get(i));
+                continue;
+            }
+            logger.info("We're adding this one " + columns.get(i) + " " + columnValues.get(i));
             s.append(columns.get(i)).append(" = ").append("'").append(columnValues.get(i)).append("',");
         }
         return s.substring(0, s.length()-1);
     }
 
-    public <T> T parseResultSet(ResultSet rs, Class<T> type) throws SQLException {
+    //this should maybe return a list of type T
+    public <T> List<T> parseResultSet(ResultSet rs, Class<T> type) throws SQLException {
         T parsedObject = null;
         ResultSetMetaData rsm = rs.getMetaData();
         int columnCount = rsm.getColumnCount();
+        ArrayList<T> parsedObjectList = new ArrayList<>();
 
-        if(rs.next()) {
+        while(rs.next()) {
             try {
                 Field[] fields = type.getDeclaredFields();
                 T objectInstance = type.newInstance();
@@ -174,11 +184,12 @@ public class QueryBuilder {
                     method.invoke(objectInstance, rs.getObject(i));
                 }
                 parsedObject = objectInstance;
+                parsedObjectList.add(parsedObject);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return parsedObject;
+        return parsedObjectList;
     }
 
 }

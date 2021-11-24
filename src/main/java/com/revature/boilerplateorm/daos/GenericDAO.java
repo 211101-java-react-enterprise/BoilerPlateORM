@@ -6,9 +6,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
+import java.util.List;
 
 
-public abstract class GenericDAO {
+public class GenericDAO {
     //TODO, get a connection from a pool when calling this
     private final Connection conn;
     private static final Logger logger = LogManager.getLogger();
@@ -26,9 +27,7 @@ public abstract class GenericDAO {
             sql = String.format(sql,qb.getTableName(),qb.getColumns(), qb.getColumnValues());
             logger.info("Save query is looking like: {}", sql);
             PreparedStatement pstmt = conn.prepareStatement(sql);
-            System.out.println(pstmt);
             int rowsInserted = pstmt.executeUpdate();
-
             if (rowsInserted != 0) {
                 return true;
             }
@@ -40,7 +39,26 @@ public abstract class GenericDAO {
     }
 
     //instead of object we need to take the class type since we might not know th
-    public <T> T find(int key, Class<T> type){
+    public <T> T find(Object key, Class<T> type){
+        try {
+            //todo
+            QueryBuilder qb = new QueryBuilder(type);
+            String sql = "select * from %s where %s = %d";
+            sql = String.format(sql,qb.getTableName(),qb.getPrimaryKey(), key);
+            logger.info("Find query is looking like: {}", sql);
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery();
+            List<T> list = qb.parseResultSet(rs, type);
+
+            T ta = list.get(0);
+            return ta;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public <T> List<T> findAll(Object key, Class<T> type) {
         try {
             //todo
             QueryBuilder qb = new QueryBuilder(type);
@@ -56,7 +74,7 @@ public abstract class GenericDAO {
         return null;
     }
 
-    public boolean update(int key, Object object){
+    public boolean update(Object key, Object object){
         try{
         //Complete object updates only, use only if you have a whole object
         QueryBuilder qb = new QueryBuilder(object);
@@ -72,7 +90,7 @@ public abstract class GenericDAO {
         return false;
     }
 
-    public boolean delete(int key, Object object) {
+    public boolean delete(Object key, Object object) {
         try {
             if (object == null) {
                 logger.info("User is trying to delete an unknown object");

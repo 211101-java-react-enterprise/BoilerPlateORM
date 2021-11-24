@@ -24,7 +24,7 @@ public class QueryBuilderTest {
     public void test_setTableName_setsTableNameValueToUser_givenUserObject() {
 
         User newUser = new User(1, "Danh", "Tran", "danhtran1337@gmail.com", "danhtran123", "password");
-        String expectedResult = "user";
+        String expectedResult = "users";
         sut = new QueryBuilder(newUser);
 
         String actualResult = sut.getTableName();
