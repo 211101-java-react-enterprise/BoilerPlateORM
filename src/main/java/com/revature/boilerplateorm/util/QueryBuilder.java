@@ -157,7 +157,6 @@ public class QueryBuilder {
                 argArray[i-1] = e;
             }
             try {
-                newObject = object.getClass().newInstance();
                 Constructor[] constructors = object.getClass().getConstructors();
                 for (Constructor ctor : constructors) {
                     //if we find a constructor that has an arg size of columnCount, pass the array into the constructor making a new instance of class with values.
