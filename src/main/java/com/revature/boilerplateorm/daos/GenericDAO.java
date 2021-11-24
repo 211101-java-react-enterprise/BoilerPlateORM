@@ -39,22 +39,6 @@ public abstract class GenericDAO {
         return false;
     }
 
-    public boolean update(int key, Object object){
-        try{
-        //Complete object updates only, use only if you have a whole object
-        QueryBuilder qb = new QueryBuilder(object);
-        String sql = "update %s set %s where %s = %d";
-        sql = String.format(sql, qb.getTableName(), qb.getColumnEqualValues(), qb.getPrimaryKey(), key);
-        logger.info("Update query is looking like: {}", sql);
-        int rows = conn.prepareStatement(sql).executeUpdate();
-        if (rows > 0) return true;
-        } catch (SQLException e) {
-            // TODO logging
-            e.printStackTrace();
-        }
-        return false;
-    }
-
     //instead of object we need to take the class type since we might not know th
     public <T> T find(int key, Class<T> type){
         try {
@@ -70,6 +54,22 @@ public abstract class GenericDAO {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public boolean update(int key, Object object){
+        try{
+        //Complete object updates only, use only if you have a whole object
+        QueryBuilder qb = new QueryBuilder(object);
+        String sql = "update %s set %s where %s = %d";
+        sql = String.format(sql, qb.getTableName(), qb.getColumnEqualValues(), qb.getPrimaryKey(), key);
+        logger.info("Update query is looking like: {}", sql);
+        int rows = conn.prepareStatement(sql).executeUpdate();
+        if (rows > 0) return true;
+        } catch (SQLException e) {
+            // TODO logging
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public boolean delete(int key, Object object) {
