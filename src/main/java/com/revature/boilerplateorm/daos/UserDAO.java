@@ -14,7 +14,7 @@ public class UserDAO extends GenericDAO{
     }
 
 
-    public User find(int key, User user){
+    public ResultSet find(int key, User user){
         try {
             //todo
             QueryBuilder qb = new QueryBuilder(user);
@@ -23,15 +23,7 @@ public class UserDAO extends GenericDAO{
             System.out.println(sql);
             PreparedStatement pstmt = conn.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();
-            if(rs.next())
-            return new User(
-            rs.getInt("id"),
-            rs.getString("first_name"),
-            rs.getString("last_name"),
-            rs.getString("email"),
-            rs.getString("username"),
-            rs.getString("password")
-            );
+            return rs;
         } catch (SQLException e) {
             e.printStackTrace();
         }

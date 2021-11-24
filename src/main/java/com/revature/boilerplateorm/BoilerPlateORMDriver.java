@@ -4,6 +4,7 @@ import com.revature.boilerplateorm.daos.GenericDAO;
 import com.revature.boilerplateorm.daos.UserDAO;
 import com.revature.boilerplateorm.models.User;
 import com.revature.boilerplateorm.util.ConnectionFactory;
+import com.revature.boilerplateorm.util.QueryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -36,10 +37,12 @@ public class BoilerPlateORMDriver {
             u.setUsername("test");
             u.setLastName("testerson");
             //d.save(u);
-            System.out.println(d.find(1, u));
+            QueryBuilder qb = new QueryBuilder();
+            System.out.println(qb.parseResultSet(d.find(1,u),u));
+            //System.out.println(d.find(1, u));
             u.setFirstName("asdf");
-            System.out.println(d.update(u.getId(), u));
-            System.out.println(d.find(1, u));
+            //System.out.println(d.update(u.getId(), u));
+            //System.out.println(d.find(1, u));
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Connection failed");

@@ -5,9 +5,17 @@ import com.revature.boilerplateorm.util.annotations.Id;
 import com.revature.boilerplateorm.util.annotations.Table;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.postgresql.core.ResultHandler;
+import org.postgresql.core.ResultHandlerBase;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class QueryBuilder {
 
@@ -133,6 +141,37 @@ public class QueryBuilder {
             s.append(columns.get(i)).append(" = ").append(columnValues.get(i)).append(", ");
         }
         return s.substring(0, s.length()-2);
+    }
+
+    public Object parseResultSet(ResultSet rs, Object object) throws SQLException {
+        Object newObject = null;
+        int columnCount = 0;
+        ResultSetMetaData rsm = rs.getMetaData();
+        columnCount = rsm.getColumnCount();
+        Object[] argArray = new Object[columnCount];
+
+        if(rs.next()) {
+            //adding value of whatever we parsed into an array
+            for (int i = 1; i <= columnCount; i++) {
+                Object e = rs.getObject(i);
+                argArray[i-1] = e;
+            }
+            try {
+                newObject = object.getClass().newInstance();
+                Constructor[] constructors = object.getClass().getConstructors();
+                for (Constructor ctor : constructors) {
+                    //if we find a constructor that has an arg size of columnCount, pass the array into the constructor making a new instance of class with values.
+                    if(ctor.getParameterCount() == columnCount) {
+                        newObject = ctor.newInstance(argArray);
+                        break;
+                    }
+                }
+            } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
+        return newObject;
+
     }
 
 }
