@@ -5,12 +5,14 @@ import com.revature.boilerplateorm.util.annotations.Id;
 import com.revature.boilerplateorm.util.annotations.Table;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.postgresql.core.Query;
 import org.postgresql.core.ResultHandler;
 import org.postgresql.core.ResultHandlerBase;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -21,18 +23,24 @@ public class QueryBuilder {
 
     Logger logger = LogManager.getLogger();
     Object object;
+    Class<?> type;
     private String tableName = "";
     private String primaryKey;
     private final ArrayList<String> columns = new ArrayList<>();
     private final ArrayList<String> columnValues = new ArrayList<>();
 
-    public QueryBuilder() {
-
+    public QueryBuilder(Class<?> type) {
+        this.type = type;
+        setTableName();
+        setColumnsInfo();
     }
+
     public QueryBuilder(Object object) {
         this.object = object;
+        this.type = object.getClass();
         setTableName();
-        setFieldInfo();
+        setColumnsInfo();
+        setColumnValuesInfo();
     }
 
     /**
@@ -41,7 +49,7 @@ public class QueryBuilder {
     private void setTableName() {
         Class<?> clazz = null;
         try {
-            clazz = Class.forName(object.getClass().getName());
+            clazz = Class.forName(type.getName());
             if(clazz.isAnnotationPresent(Table.class)) {
                 Table table = clazz.getAnnotation(Table.class);
                 tableName = table.name();
@@ -57,18 +65,12 @@ public class QueryBuilder {
     /**
      * Assign the field's column name and value to the class variables "columns" and "columnValues" respectively
      */
-    private void setFieldInfo() {
+    private void setColumnsInfo() {
 
-        Field[] fields = object.getClass().getDeclaredFields();
-
+        Field[] fields = type.getDeclaredFields();
         for(Field field : fields) {
             field.setAccessible(true);
-
-            //check if current field is the primary key
-            if(field.isAnnotationPresent(Id.class)) {
-                primaryKey = field.getName();
-            }
-
+            setPrimaryKey(field);
             String dbName;
             //find out the table name mapping to the current field
             if(field.isAnnotationPresent(Column.class)) {
@@ -78,20 +80,22 @@ public class QueryBuilder {
                 dbName = field.getName();
             }
             columns.add(dbName);
+        }
+        logger.info("Column: {}", columns);
+    }
 
+    private void setColumnValuesInfo() {
+
+        Field[] fields = type.getDeclaredFields();
+        for(Field field : fields) {
+            field.setAccessible(true);
             try {
                 columnValues.add(field.get(object).toString());
-
             } catch (IllegalAccessException e) {
                 logger.error(e.getMessage());
             }
-
         }
-        //valueBuilder.append(field.get(object)).append(",");
-        //columns = columnBuilder.substring(0, columnBuilder.length()-1);
-       // columnValues = valueBuilder.substring(0, valueBuilder.length()-1);
 
-        logger.info("Column: {}", columns);
         logger.info("Values: {}", columnValues);
     }
 
@@ -127,8 +131,17 @@ public class QueryBuilder {
             valueBuilder.append("'").append(columnValues.get(i)).append("',");
         }
 
+        System.out.println("Column size is: " + columnValues.size());
+        System.out.println("Builder is: " + valueBuilder);
         logger.info("Value passed out is: " + valueBuilder.substring(0, valueBuilder.length()-1));
         return valueBuilder.substring(0,valueBuilder.length()-1);
+    }
+
+    public void setPrimaryKey(Field field) {
+        //check if current field is the primary key
+        if(field.isAnnotationPresent(Id.class)) {
+            primaryKey = field.getName();
+        }
     }
 
     public String getPrimaryKey() {
@@ -138,39 +151,34 @@ public class QueryBuilder {
     public String getColumnEqualValues() {
         StringBuilder s = new StringBuilder();
         for (int i = 0; i < columns.size(); i++) {
-            s.append(columns.get(i)).append(" = ").append(columnValues.get(i)).append(", ");
+            s.append(columns.get(i)).append(" = ").append("'").append(columnValues.get(i)).append("',");
         }
-        return s.substring(0, s.length()-2);
+        return s.substring(0, s.length()-1);
     }
 
-    public <T> T parseResultSet(ResultSet rs, T object) throws SQLException {
-        T t = null;
-        int columnCount = 0;
+    public <T> T parseResultSet(ResultSet rs, Class<T> type) throws SQLException {
+        T parsedObject = null;
         ResultSetMetaData rsm = rs.getMetaData();
-        columnCount = rsm.getColumnCount();
-        Object[] argArray = new Object[columnCount];
+        int columnCount = rsm.getColumnCount();
 
         if(rs.next()) {
-            //adding value of whatever we parsed into an array
-            for (int i = 1; i <= columnCount; i++) {
-                Object e = rs.getObject(i);
-                argArray[i-1] = e;
-            }
             try {
-                Constructor[] constructors = object.getClass().getConstructors();
-                for (Constructor ctor : constructors) {
-                    //if we find a constructor that has an arg size of columnCount, pass the array into the constructor making a new instance of class with values.
-                    if(ctor.getParameterCount() == columnCount) {
-                        t = (T) ctor.newInstance(argArray);
-                        break;
-                    }
+                Field[] fields = type.getDeclaredFields();
+                T objectInstance = type.newInstance();
+                //adding value of whatever we parsed into an array
+                for (int i = 1; i <= columnCount; i++) {
+                    Field field = fields[i-1];
+                    String methodName = "set" + field.getName().substring(0,1).toUpperCase() + field.getName().substring(1);
+                    Method method = type.getMethod(methodName, field.getType());
+                    logger.info("Method {} invoking with {}",methodName, rs.getObject(i));
+                    method.invoke(objectInstance, rs.getObject(i));
                 }
-            } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+                parsedObject = objectInstance;
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return t;
-
+        return parsedObject;
     }
 
 }

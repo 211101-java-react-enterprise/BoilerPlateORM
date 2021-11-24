@@ -37,13 +37,14 @@ public class BoilerPlateORMDriver {
             u.setUsername("test");
             u.setLastName("testerson");
             //d.save(u);
-            QueryBuilder qb = new QueryBuilder();
-            User testUser = qb.parseResultSet(d.find(1, u), u);
-            System.out.printf("Id: %d first_name: %s last_name: %s", testUser.getId(), testUser.getFirstName(), testUser.getLastName());
-            //System.out.println(d.find(1, u));
+            User testUser = d.find(1,User.class);
+            System.out.println(testUser);
+            //System.out.printf("Id: %d first_name: %s last_name: %s\n", testUser.getId(), testUser.getFirstName(), testUser.getLastName());
+            //System.out.println(d.delete(1, testUser));
+
             u.setFirstName("asdf");
-            //System.out.println(d.update(u.getId(), u));
-            //System.out.println(d.find(1, u));
+            System.out.println(d.update(u.getId(), u));
+            System.out.println(d.find(1, User.class));
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Connection failed");
