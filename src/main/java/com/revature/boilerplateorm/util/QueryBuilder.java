@@ -131,7 +131,7 @@ public class QueryBuilder {
         return valueBuilder.substring(0,valueBuilder.length()-1);
     }
 
-    public Object getPrimaryKey() {
+    public String getPrimaryKey() {
         return primaryKey;
     }
 
@@ -143,8 +143,8 @@ public class QueryBuilder {
         return s.substring(0, s.length()-2);
     }
 
-    public Object parseResultSet(ResultSet rs, Object object) throws SQLException {
-        Object newObject = null;
+    public <T> T parseResultSet(ResultSet rs, T object) throws SQLException {
+        T t = null;
         int columnCount = 0;
         ResultSetMetaData rsm = rs.getMetaData();
         columnCount = rsm.getColumnCount();
@@ -161,7 +161,7 @@ public class QueryBuilder {
                 for (Constructor ctor : constructors) {
                     //if we find a constructor that has an arg size of columnCount, pass the array into the constructor making a new instance of class with values.
                     if(ctor.getParameterCount() == columnCount) {
-                        newObject = ctor.newInstance(argArray);
+                        t = (T) ctor.newInstance(argArray);
                         break;
                     }
                 }
@@ -169,7 +169,7 @@ public class QueryBuilder {
                 e.printStackTrace();
             }
         }
-        return newObject;
+        return t;
 
     }
 

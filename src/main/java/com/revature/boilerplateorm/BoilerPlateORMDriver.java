@@ -38,7 +38,8 @@ public class BoilerPlateORMDriver {
             u.setLastName("testerson");
             //d.save(u);
             QueryBuilder qb = new QueryBuilder();
-            System.out.println(qb.parseResultSet(d.find(1,u),u));
+            User testUser = qb.parseResultSet(d.find(1, u), u);
+            System.out.printf("Id: %d first_name: %s last_name: %s", testUser.getId(), testUser.getFirstName(), testUser.getLastName());
             //System.out.println(d.find(1, u));
             u.setFirstName("asdf");
             //System.out.println(d.update(u.getId(), u));
