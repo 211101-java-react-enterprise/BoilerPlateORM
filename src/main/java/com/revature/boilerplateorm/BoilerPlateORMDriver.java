@@ -2,6 +2,7 @@ package com.revature.boilerplateorm;
 
 import com.revature.boilerplateorm.daos.GenericDAO;
 import com.revature.boilerplateorm.daos.UserDAO;
+import com.revature.boilerplateorm.dtos.Credentials;
 import com.revature.boilerplateorm.models.User;
 import com.revature.boilerplateorm.util.ConnectionFactory;
 import com.revature.boilerplateorm.util.QueryBuilder;
@@ -42,20 +43,28 @@ public class BoilerPlateORMDriver {
             partialUser.setId(1);
             partialUser.setUsername("tester");
 
+            Credentials creds = new Credentials();
+            creds.setUsername(u.getUsername());
+            creds.setPassword(u.getPassword());
+
+            System.out.println(d.findByUsernameAndPassword(creds, User.class));
+            System.out.println(d.findByEmail("example@email.com", User.class));
+            System.out.println(d.find(1, User.class));
             //d.delete(1, partialUser);
 
             //System.out.println(partialUser);
 
-            d.update(1, partialUser);
+            //d.update(1, partialUser);
             //d.save(u);
-            List<User> testUser = d.findAll(1,User.class);
-            System.out.println(testUser);
+            //List<User> testUser = d.findAll(1,User.class);
+            //System.out.println(testUser);
             //System.out.printf("Id: %d first_name: %s last_name: %s\n", testUser.getId(), testUser.getFirstName(), testUser.getLastName());
             //System.out.println(d.delete(1, testUser));
 
             //u.setFirstName("asdf");
             //System.out.println(d.update(u.getId(), u));
-            //System.out.println(d.find(1, User.class));
+
+
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Connection failed");

@@ -192,4 +192,63 @@ public class QueryBuilder {
         return parsedObjectList;
     }
 
+    /**
+     * parses information from the Object key and call stack, to create the proper where statement for the query
+     * If the user created method that calls this is without any specific conditions (find), will default to finding with the primary key
+     * If it is created with specific conditions, or right now if the parameter is a DTO, then it will find whatever fields the DTO stores
+     * If it is created with a single specific condition, it will take the field from the user created method, since the input will be an int or String.
+     */
+    public String getAllWhereStatements(Object key) {
+        //looks through the call stack to find out the method that calls the queryBuilder's getAllWhereStatements.
+        // [0]Thread#getStackTrace -> [1]queryBuilder#getAllWhereElements -> [2]genericDAO#find -> [3]UserDAO#find
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        String methodName = stackTraceElements[3].getMethodName();
+        StringBuilder outputBuilder = new StringBuilder();
+        //If statement used only if the caller method is called find();
+        if(methodName.length() == 4) {
+            return getPrimaryKey() + " = " + key;
+        }
+        //removes the findBy part of the method leaving only field names and conjunctions
+        String toParse = methodName.substring(6);
+        String[] parsedMethod = toParse.split("(?=[A-Z])");
+        //we are working with a DTO
+        if(parsedMethod.length > 1) {
+            Field[] fields = key.getClass().getDeclaredFields();
+            for(Field field : fields) {
+                field.setAccessible(true);
+                try {
+                    outputBuilder.append(field.getName()).append(" = ").append("'").append(field.get(key)).append("'").append(" and ");
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                //why the hell did I think of this thing in the comments?!? WHAT WAS THE POINT? WHEN THE DTO HAD THE NAME ALREADY
+                //if we wanted to work with varargs instead of DTOs or including DTOs, this could be used as well, not sure if we want to implement that
+                //because then it would sorta be tricky to use in that the user will have to input the parameters in the correct order as the naming convention
+                //compare the DTO's fields with the fields in the method's name,
+                //if they are a match we know th
+                /*
+                for(String param : parsedMethod) {
+                    try {
+                        System.out.println(field.getName() + " " + field.get(key));
+                        if (field.getName().equals(param.toLowerCase())) {
+                            outputBuilder.append(field.getName()).append(" = ").append("'").append(field.get(key)).append("'").append(" and ");
+                            break;
+                        }
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                 */
+            }
+            //remove the last " and " that was appended to the outputBuilder
+            outputBuilder.delete(outputBuilder.length()-5, outputBuilder.length());
+        } else { // this means we are not working with a DTO but a single int or string
+            //this should be for just findByEmail or findByUsername
+            String placeholder = parsedMethod[0];
+            outputBuilder.append(parsedMethod[0]).append(" = ").append("'").append(key).append("'");
+        }
+        return outputBuilder.toString();
+    }
+
 }

@@ -1,6 +1,5 @@
 package com.revature.boilerplateorm.daos;
 
-import com.revature.boilerplateorm.models.User;
 import com.revature.boilerplateorm.util.QueryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,20 +37,18 @@ public class GenericDAO {
         return false;
     }
 
-    //instead of object we need to take the class type since we might not know th
     public <T> T find(Object key, Class<T> type){
         try {
-            //todo
             QueryBuilder qb = new QueryBuilder(type);
-            String sql = "select * from %s where %s = %d";
-            sql = String.format(sql,qb.getTableName(),qb.getPrimaryKey(), key);
+            String sql = "select * from %s where %s";
+            sql = String.format(sql,qb.getTableName(),qb.getAllWhereStatements(key));
             logger.info("Find query is looking like: {}", sql);
             PreparedStatement pstmt = conn.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();
             List<T> list = qb.parseResultSet(rs, type);
-
-            T ta = list.get(0);
-            return ta;
+            if(list.size() > 0) {
+                return list.get(0);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }

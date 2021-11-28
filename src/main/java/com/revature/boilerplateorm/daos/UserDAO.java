@@ -1,8 +1,8 @@
 package com.revature.boilerplateorm.daos;
 
+import com.revature.boilerplateorm.dtos.Credentials;
 import com.revature.boilerplateorm.models.User;
 import com.revature.boilerplateorm.util.ConnectionFactory;
-import com.revature.boilerplateorm.util.QueryBuilder;
 
 import java.sql.*;
 import java.util.List;
@@ -25,6 +25,14 @@ public class UserDAO{
 
     public <T> T find(int key, Class<T> type) {
         return gDao.find(key, type);
+    }
+
+    public <T> T findByUsernameAndPassword(Credentials creds, Class<T> type) {
+        return gDao.find(creds, type);
+    }
+
+    public <T> T findByEmail(String email, Class<T> type) {
+        return gDao.find(email, type);
     }
 
     public boolean update(int key, User user) {
