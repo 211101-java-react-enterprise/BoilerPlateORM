@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 public class ConnectionFactory {
+    //TODO, create pooled connections
 
     private static final ConnectionFactory connectionFactory = new ConnectionFactory();
     private Properties props = new Properties();

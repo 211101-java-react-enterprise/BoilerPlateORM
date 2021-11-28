@@ -5,6 +5,8 @@ import com.revature.boilerplateorm.util.annotations.Entity;
 import com.revature.boilerplateorm.util.annotations.Id;
 import com.revature.boilerplateorm.util.annotations.Table;
 
+//TODO Remove from ORM
+
 @Entity
 @Table(name="users")
 public class User {

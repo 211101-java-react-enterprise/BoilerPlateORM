@@ -1,10 +1,10 @@
 package com.revature.boilerplateorm;
 
-import com.revature.boilerplateorm.daos.GenericDAO;
+
 import com.revature.boilerplateorm.daos.UserDAO;
 import com.revature.boilerplateorm.models.User;
 import com.revature.boilerplateorm.util.ConnectionFactory;
-import com.revature.boilerplateorm.util.QueryBuilder;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -14,6 +14,7 @@ import java.util.List;
 
 public class BoilerPlateORMDriver {
 
+    //TODO Remove
 
     /**
      * From what I can tell...

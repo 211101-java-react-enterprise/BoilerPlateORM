@@ -5,19 +5,14 @@ import com.revature.boilerplateorm.util.annotations.Id;
 import com.revature.boilerplateorm.util.annotations.Table;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.postgresql.core.Query;
-import org.postgresql.core.ResultHandler;
-import org.postgresql.core.ResultHandlerBase;
 
-import java.lang.reflect.Constructor;
+
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class QueryBuilder {
@@ -30,12 +25,14 @@ public class QueryBuilder {
     private final ArrayList<String> columns = new ArrayList<>();
     private final ArrayList<String> columnValues = new ArrayList<>();
 
+    //Constructor for Class types
     public QueryBuilder(Class<?> type) {
         this.type = type;
         setTableName();
         setColumnsInfo();
     }
 
+    //Constructor for objects
     public QueryBuilder(Object object) {
         this.object = object;
         this.type = object.getClass();
@@ -45,16 +42,19 @@ public class QueryBuilder {
     }
 
     /**
-     * Assign the table in which the object belongs to, to the class variable "tableName"
+     * Variable "tableName" gets assigned the table in which the object belongs to,
+     * specified by an annotation in the object's class.
      */
     private void setTableName() {
         Class<?> clazz = null;
         try {
             clazz = Class.forName(type.getName());
             if(clazz.isAnnotationPresent(Table.class)) {
+                //Get the name specified in the Table annotation if it is present
                 Table table = clazz.getAnnotation(Table.class);
                 tableName = table.name();
             } else {
+                //if not it will just assume the simple name of the class is the table name
                 tableName = clazz.getSimpleName();
             }
         } catch (ClassNotFoundException e) {
@@ -75,9 +75,11 @@ public class QueryBuilder {
             String dbName;
             //find out the table name mapping to the current field
             if(field.isAnnotationPresent(Column.class)) {
+                //Get the name specified in the Column annotation if it is present
                 Column column = field.getAnnotation(Column.class);
                 dbName = column.name();
             } else {
+                //if not it will just assume the name of the field for the column
                 dbName = field.getName();
             }
             columns.add(dbName);
@@ -150,6 +152,10 @@ public class QueryBuilder {
         return primaryKey;
     }
 
+    /**
+     * Combination of getColumns() and getValues() for the sql UPDATE
+     * @return String in the format "Column = Value,", skipping nulls
+     */
     public String getColumnEqualValues() {
         StringBuilder s = new StringBuilder();
         for (int i = 0; i < columnValues.size(); i++) {
@@ -177,7 +183,9 @@ public class QueryBuilder {
                 T objectInstance = type.newInstance();
                 //adding value of whatever we parsed into an array
                 for (int i = 1; i <= columnCount; i++) {
+                    //-1 here is for compatibility working with 1 and 0 based systems
                     Field field = fields[i-1];
+                    //Getting the setX() method from our object's class
                     String methodName = "set" + field.getName().substring(0,1).toUpperCase() + field.getName().substring(1);
                     Method method = type.getMethod(methodName, field.getType());
                     logger.info("Method {} invoking with {}",methodName, rs.getObject(i));

@@ -1,6 +1,5 @@
 package com.revature.boilerplateorm.daos;
 
-import com.revature.boilerplateorm.models.User;
 import com.revature.boilerplateorm.util.QueryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -8,7 +7,7 @@ import org.apache.logging.log4j.Logger;
 import java.sql.*;
 import java.util.List;
 
-
+// TODO remove from orm
 public class GenericDAO {
     //TODO, get a connection from a pool when calling this
     private final Connection conn;
@@ -38,10 +37,9 @@ public class GenericDAO {
         return false;
     }
 
-    //instead of object we need to take the class type since we might not know th
     public <T> T find(Object key, Class<T> type){
         try {
-            //todo
+            //todo simplify this by calling find all, and just returning the first one off the list
             QueryBuilder qb = new QueryBuilder(type);
             String sql = "select * from %s where %s = %d";
             sql = String.format(sql,qb.getTableName(),qb.getPrimaryKey(), key);
@@ -53,6 +51,7 @@ public class GenericDAO {
             T ta = list.get(0);
             return ta;
         } catch (SQLException e) {
+            // TODO logging
             e.printStackTrace();
         }
         return null;
@@ -60,7 +59,6 @@ public class GenericDAO {
 
     public <T> List<T> findAll(Object key, Class<T> type) {
         try {
-            //todo
             QueryBuilder qb = new QueryBuilder(type);
             String sql = "select * from %s where %s = %d";
             sql = String.format(sql,qb.getTableName(),qb.getPrimaryKey(), key);
@@ -69,6 +67,7 @@ public class GenericDAO {
             ResultSet rs = pstmt.executeQuery();
             return qb.parseResultSet(rs, type);
         } catch (SQLException e) {
+            // TODO logging
             e.printStackTrace();
         }
         return null;
@@ -76,7 +75,6 @@ public class GenericDAO {
 
     public boolean update(Object key, Object object){
         try{
-        //Complete object updates only, use only if you have a whole object
         QueryBuilder qb = new QueryBuilder(object);
         String sql = "update %s set %s where %s = %d";
         sql = String.format(sql, qb.getTableName(), qb.getColumnEqualValues(), qb.getPrimaryKey(), key);

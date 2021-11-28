@@ -2,10 +2,11 @@ package com.revature.boilerplateorm.daos;
 
 import com.revature.boilerplateorm.models.User;
 import com.revature.boilerplateorm.util.ConnectionFactory;
-import com.revature.boilerplateorm.util.QueryBuilder;
 
 import java.sql.*;
 import java.util.List;
+
+//TODO Remove
 
 public class UserDAO{
     private final Connection conn = ConnectionFactory.getInstance().getConnection();
