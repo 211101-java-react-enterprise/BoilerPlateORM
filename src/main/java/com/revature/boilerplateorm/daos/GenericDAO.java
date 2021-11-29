@@ -55,12 +55,12 @@ public class GenericDAO {
         return null;
     }
 
-    public <T> List<T> findAll(Object key, Class<T> type) {
+    public <T> List<T> findAll(Class<T> type, Object... key) {
         try {
             //todo
             QueryBuilder qb = new QueryBuilder(type);
             String sql = "select * from %s where %s = %d";
-            sql = String.format(sql,qb.getTableName(),qb.getPrimaryKey(), key);
+            sql = String.format(sql,qb.getTableName(), qb.getAllWhereStatements(key));
             logger.info("Find query is looking like: {}", sql);
             PreparedStatement pstmt = conn.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();

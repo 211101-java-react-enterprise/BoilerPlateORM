@@ -53,7 +53,7 @@ public class BoilerPlateORMDriver {
             name.setLastName("Tran");
 
             //System.out.println(d.findByFirstNameAndLastName(User.class, "Test", "testerson"));
-            //System.out.println(d.findByUsernameAndPassword(creds, User.class));
+            //System.out.println(d.findByUsernameAndPassword(User.class,"test", "test"));
             System.out.println(d.findByEmail("example@email.com", User.class));
             //System.out.println(d.find(1, User.class));
             //d.delete(1, partialUser);

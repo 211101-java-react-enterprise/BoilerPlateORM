@@ -28,8 +28,8 @@ public class UserDAO{
         return gDao.find(type, key);
     }
 
-    public <T> T findByUsernameAndPassword(Credentials creds, Class<T> type) {
-        return gDao.find(type, creds);
+    public <T> T findByUsernameAndPassword(Class<T> type, String username, String password) {
+        return gDao.find(type, username, password);
     }
 
     public <T> T findByFirstNameAndLastName(Class<T> type, String firstName, String lastName) {
@@ -49,7 +49,7 @@ public class UserDAO{
     }
 
     public <T>List<T> findAll(Object key, Class<T> type) {
-        return gDao.findAll(key, type);
+        return gDao.findAll(type, key);
     }
 
 }

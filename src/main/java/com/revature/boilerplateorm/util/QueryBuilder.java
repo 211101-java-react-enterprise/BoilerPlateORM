@@ -205,7 +205,7 @@ public class QueryBuilder {
         }
         //removes the findBy part of the method leaving only field names and conjunctions
         String toParse = methodName.substring(6);
-        //working with varargs
+        //working with varargs: dependent on the naming of the method that called this
         if(key.length > 1) {
             logger.info("This is a vararg");
             String[] parsedMethod = toParse.split("And");
