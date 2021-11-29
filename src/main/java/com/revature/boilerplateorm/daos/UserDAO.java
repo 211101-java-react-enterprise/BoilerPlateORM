@@ -1,7 +1,5 @@
 package com.revature.boilerplateorm.daos;
 
-import com.revature.boilerplateorm.dtos.Credentials;
-import com.revature.boilerplateorm.dtos.Name;
 import com.revature.boilerplateorm.models.User;
 import com.revature.boilerplateorm.util.ConnectionFactory;
 

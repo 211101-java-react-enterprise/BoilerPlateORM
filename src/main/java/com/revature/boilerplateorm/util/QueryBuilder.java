@@ -224,6 +224,7 @@ public class QueryBuilder {
             }
             outputBuilder.delete(outputBuilder.length()-5, outputBuilder.length());
         }
+        /*
         //Working with a DTO
         //else if(key[0].getClass().isAnnotationPresent(DTO.class))... Since this is a custom ORM... we don't necessarily have to follow how Hibernate does it.
         //We can have our own annotations, so we could make an annotations exclusively for DTOs just to make this a bit easier
@@ -243,7 +244,9 @@ public class QueryBuilder {
             }
             //remove the last " and " that was appended to the outputBuilder
             outputBuilder.delete(outputBuilder.length()-5, outputBuilder.length());
-        } else { // this means we are not working with a DTO but a single int or string
+         }
+         */
+         else { // this means we are not working with a DTO but a single int or string
             //this should be for just findByEmail or findByUsername
             outputBuilder.append(toParse).append(" = ").append("'").append(key[0]).append("'");
             logger.info("This is a method with a single certain condition, not varargs");
