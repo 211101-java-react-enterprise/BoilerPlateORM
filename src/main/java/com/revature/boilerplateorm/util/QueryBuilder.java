@@ -5,19 +5,13 @@ import com.revature.boilerplateorm.util.annotations.Id;
 import com.revature.boilerplateorm.util.annotations.Table;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.postgresql.core.Query;
-import org.postgresql.core.ResultHandler;
-import org.postgresql.core.ResultHandlerBase;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class QueryBuilder {
@@ -198,7 +192,7 @@ public class QueryBuilder {
      * If it is created with specific conditions, or right now if the parameter is a DTO, then it will find whatever fields the DTO stores
      * If it is created with a single specific condition, it will take the field from the user created method, since the input will be an int or String.
      */
-    public String getAllWhereStatements(Object key) {
+    public String getAllWhereStatements(Object... key) {
         //looks through the call stack to find out the method that calls the queryBuilder's getAllWhereStatements.
         // [0]Thread#getStackTrace -> [1]queryBuilder#getAllWhereElements -> [2]genericDAO#find -> [3]UserDAO#find
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
@@ -206,48 +200,55 @@ public class QueryBuilder {
         StringBuilder outputBuilder = new StringBuilder();
         //If statement used only if the caller method is called find();
         if(methodName.length() == 4) {
-            return getPrimaryKey() + " = " + key;
+            logger.info("This is a find()");
+            return getPrimaryKey() + " = " + key[0];
         }
         //removes the findBy part of the method leaving only field names and conjunctions
         String toParse = methodName.substring(6);
-        String[] parsedMethod = toParse.split("(?=[A-Z])");
-        //we are working with a DTO
-        if(parsedMethod.length > 1) {
-            Field[] fields = key.getClass().getDeclaredFields();
+        //working with varargs
+        if(key.length > 1) {
+            logger.info("This is a vararg");
+            String[] parsedMethod = toParse.split("And");
+            String[] tempParsedMethod;
+            String[] realArray = new String[parsedMethod.length];
+            for(int i = 0 ; i < parsedMethod.length; i++) {
+                tempParsedMethod = parsedMethod[i].split("(?=[A-Z])");
+                StringBuilder columnBuilder = new StringBuilder();
+                //I hate this because this means this only works with snake casing naming convention
+                //If we had a "configuration" then this could be fixed but that is out of the scope of this project.
+                for(String z : tempParsedMethod) {
+                    columnBuilder.append(z).append("_");
+                }
+                realArray[i] = columnBuilder.substring(0, columnBuilder.length()-1);
+                outputBuilder.append(realArray[i]).append(" = '").append(key[i]).append("'").append(" and ");
+            }
+            outputBuilder.delete(outputBuilder.length()-5, outputBuilder.length());
+        }
+        //Working with a DTO
+        //else if(key[0].getClass().isAnnotationPresent(DTO.class))... Since this is a custom ORM... we don't necessarily have to follow how Hibernate does it.
+        //We can have our own annotations, so we could make an annotations exclusively for DTOs just to make this a bit easier
+        //Because right now we are facing the problem of this isn't exclusively for DTOs since Strings, Ints etc also have their own fields
+        //Maybe we can just rearrange this with the else statement under this
+        else if(key[0].getClass().getDeclaredFields().length > 1) {
+            logger.info("this is a DTO");
+            //get the fields of the DTO to parse
+            Field[] fields = key[0].getClass().getDeclaredFields();
             for(Field field : fields) {
                 field.setAccessible(true);
                 try {
-                    outputBuilder.append(field.getName()).append(" = ").append("'").append(field.get(key)).append("'").append(" and ");
+                    outputBuilder.append(field.getName()).append(" = ").append("'").append(field.get(key[0])).append("'").append(" and ");
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }
-                //why the hell did I think of this thing in the comments?!? WHAT WAS THE POINT? WHEN THE DTO HAD THE NAME ALREADY
-                //if we wanted to work with varargs instead of DTOs or including DTOs, this could be used as well, not sure if we want to implement that
-                //because then it would sorta be tricky to use in that the user will have to input the parameters in the correct order as the naming convention
-                //compare the DTO's fields with the fields in the method's name,
-                //if they are a match we know th
-                /*
-                for(String param : parsedMethod) {
-                    try {
-                        System.out.println(field.getName() + " " + field.get(key));
-                        if (field.getName().equals(param.toLowerCase())) {
-                            outputBuilder.append(field.getName()).append(" = ").append("'").append(field.get(key)).append("'").append(" and ");
-                            break;
-                        }
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                 */
             }
             //remove the last " and " that was appended to the outputBuilder
             outputBuilder.delete(outputBuilder.length()-5, outputBuilder.length());
         } else { // this means we are not working with a DTO but a single int or string
             //this should be for just findByEmail or findByUsername
-            String placeholder = parsedMethod[0];
-            outputBuilder.append(parsedMethod[0]).append(" = ").append("'").append(key).append("'");
+            outputBuilder.append(toParse).append(" = ").append("'").append(key[0]).append("'");
+            logger.info("This is a method with a single certain condition, not varargs");
         }
+        logger.info(outputBuilder);
         return outputBuilder.toString();
     }
 

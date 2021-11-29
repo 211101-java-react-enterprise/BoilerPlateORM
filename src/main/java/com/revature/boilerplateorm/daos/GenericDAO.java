@@ -37,7 +37,7 @@ public class GenericDAO {
         return false;
     }
 
-    public <T> T find(Object key, Class<T> type){
+    public <T> T find(Class<T> type, Object... key ){
         try {
             QueryBuilder qb = new QueryBuilder(type);
             String sql = "select * from %s where %s";

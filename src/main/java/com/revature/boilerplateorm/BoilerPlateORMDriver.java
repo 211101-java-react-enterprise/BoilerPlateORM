@@ -3,6 +3,7 @@ package com.revature.boilerplateorm;
 import com.revature.boilerplateorm.daos.GenericDAO;
 import com.revature.boilerplateorm.daos.UserDAO;
 import com.revature.boilerplateorm.dtos.Credentials;
+import com.revature.boilerplateorm.dtos.Name;
 import com.revature.boilerplateorm.models.User;
 import com.revature.boilerplateorm.util.ConnectionFactory;
 import com.revature.boilerplateorm.util.QueryBuilder;
@@ -44,12 +45,17 @@ public class BoilerPlateORMDriver {
             partialUser.setUsername("tester");
 
             Credentials creds = new Credentials();
-            creds.setUsername(u.getUsername());
-            creds.setPassword(u.getPassword());
+            creds.setUsername("tester");
+            creds.setPassword("test");
 
-            System.out.println(d.findByUsernameAndPassword(creds, User.class));
+            Name name = new Name();
+            name.setFirstName("Danh");
+            name.setLastName("Tran");
+
+            //System.out.println(d.findByFirstNameAndLastName(User.class, "Test", "testerson"));
+            //System.out.println(d.findByUsernameAndPassword(creds, User.class));
             System.out.println(d.findByEmail("example@email.com", User.class));
-            System.out.println(d.find(1, User.class));
+            //System.out.println(d.find(1, User.class));
             //d.delete(1, partialUser);
 
             //System.out.println(partialUser);
