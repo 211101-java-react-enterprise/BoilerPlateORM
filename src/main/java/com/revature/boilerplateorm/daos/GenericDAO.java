@@ -7,7 +7,6 @@ import org.apache.logging.log4j.Logger;
 import java.sql.*;
 import java.util.List;
 
-// TODO remove from orm
 public class GenericDAO {
     //TODO, get a connection from a pool when calling this
     private final Connection conn;
@@ -16,7 +15,6 @@ public class GenericDAO {
     public GenericDAO(Connection conn) {
         this.conn = conn;
     }
-
 
     public boolean save(Object object) {
         try{
@@ -37,31 +35,19 @@ public class GenericDAO {
         return false;
     }
 
-    public <T> T find(Object key, Class<T> type){
-        try {
-            //todo simplify this by calling find all, and just returning the first one off the list
-            QueryBuilder qb = new QueryBuilder(type);
-            String sql = "select * from %s where %s = %d";
-            sql = String.format(sql,qb.getTableName(),qb.getPrimaryKey(), key);
-            logger.info("Find query is looking like: {}", sql);
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            ResultSet rs = pstmt.executeQuery();
-            List<T> list = qb.parseResultSet(rs, type);
-
-            T ta = list.get(0);
-            return ta;
-        } catch (SQLException e) {
-            // TODO logging
-            e.printStackTrace();
+    public <T> T find(Class<T> type, Object... key ){
+        List<T> result = findAll(type, key);
+        if(result.get(0) == null) {
+            return null;
         }
-        return null;
+        return result.get(0);
     }
 
-    public <T> List<T> findAll(Object key, Class<T> type) {
+    public <T> List<T> findAll(Class<T> type, Object... key) {
         try {
             QueryBuilder qb = new QueryBuilder(type);
-            String sql = "select * from %s where %s = %d";
-            sql = String.format(sql,qb.getTableName(),qb.getPrimaryKey(), key);
+            String sql = "select * from %s where %s";
+            sql = String.format(sql,qb.getTableName(), qb.getAllWhereStatementsForFind(key));
             logger.info("Find query is looking like: {}", sql);
             PreparedStatement pstmt = conn.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();
@@ -73,7 +59,8 @@ public class GenericDAO {
         return null;
     }
 
-    public boolean update(Object key, Object object){
+    //todo small slight problem currently in that if the key isn't assigned into the object, it sets the id by default to 0.
+    public boolean update(Object object, Object key){
         try{
         QueryBuilder qb = new QueryBuilder(object);
         String sql = "update %s set %s where %s = %d";
@@ -88,7 +75,7 @@ public class GenericDAO {
         return false;
     }
 
-    public boolean delete(Object key, Object object) {
+    public boolean delete(Object object, Object key) {
         try {
             if (object == null) {
                 logger.info("User is trying to delete an unknown object");

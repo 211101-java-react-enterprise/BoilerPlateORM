@@ -25,19 +25,31 @@ public class UserDAO{
     }
 
     public <T> T find(int key, Class<T> type) {
-        return gDao.find(key, type);
+        return gDao.find(type, key);
+    }
+
+    public <T> T findByUsernameAndPassword(Class<T> type, String username, String password) {
+        return gDao.find(type, username, password);
+    }
+
+    public <T> T findByFirstNameAndLastName(Class<T> type, String firstName, String lastName) {
+        return gDao.find(type, firstName, lastName);
+    }
+
+    public <T> T findByEmail(String email, Class<T> type) {
+       return gDao.find(type, email);
     }
 
     public boolean update(int key, User user) {
-        return gDao.update(key, user);
+        return gDao.update(user, key);
     }
 
     public boolean delete(int key, User user) {
-        return gDao.delete(key, user);
+        return gDao.delete(user, key);
     }
 
     public <T>List<T> findAll(Object key, Class<T> type) {
-        return gDao.findAll(key, type);
+        return gDao.findAll(type, key);
     }
 
 }
