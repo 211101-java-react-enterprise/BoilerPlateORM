@@ -41,7 +41,6 @@ public class GenericDAO {
             String sql = "select * from %s where %s";
             sql = String.format(sql,qb.getTableName(),qb.getAllWhereStatementsForFind(key));
             logger.info("Find query is looking like: {}", sql);
-            System.out.println(sql);
             PreparedStatement pstmt = conn.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();
             List<T> list = qb.parseResultSet(rs, type);
