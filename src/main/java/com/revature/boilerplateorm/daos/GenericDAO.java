@@ -86,6 +86,23 @@ public class GenericDAO {
         return false;
     }
 
+
+    public <T> List<T> getAll(Class<T> type){
+        try {
+            QueryBuilder qb = new QueryBuilder(type);
+            String sql = "select * from %s";
+            sql = String.format(sql,qb.getTableName());
+            logger.info("Getting all of: {}", type.getSimpleName());
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery();
+            return qb.parseResultSet(rs, type);
+        } catch (SQLException e) {
+            // TODO logging
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public boolean delete(Object object, Object key) {
         try {
             if (object == null) {
