@@ -36,11 +36,22 @@ public class GenericDAO {
     }
 
     public <T> T find(Class<T> type, Object... key ){
-        List<T> result = findAll(type, key);
-        if(result.get(0) == null) {
-            return null;
+        try {
+            QueryBuilder qb = new QueryBuilder(type);
+            String sql = "select * from %s where %s";
+            sql = String.format(sql,qb.getTableName(),qb.getAllWhereStatementsForFind(key));
+            logger.info("Find query is looking like: {}", sql);
+            System.out.println(sql);
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery();
+            List<T> list = qb.parseResultSet(rs, type);
+            if(list.size() > 0) {
+                return list.get(0);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        return result.get(0);
+        return null;
     }
 
     public <T> List<T> findAll(Class<T> type, Object... key) {
