@@ -39,11 +39,11 @@ public class UserDAO{
     }
 
     public boolean update(int key, User user) {
-        return gDao.update(key, user);
+        return gDao.update(user, key);
     }
 
     public boolean delete(int key, User user) {
-        return gDao.delete(key, user);
+        return gDao.delete(user, key);
     }
 
     public <T>List<T> findAll(Object key, Class<T> type) {

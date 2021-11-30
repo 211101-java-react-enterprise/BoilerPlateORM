@@ -41,7 +41,7 @@ public class GenericDAO {
         try {
             QueryBuilder qb = new QueryBuilder(type);
             String sql = "select * from %s where %s";
-            sql = String.format(sql,qb.getTableName(),qb.getAllWhereStatements(key));
+            sql = String.format(sql,qb.getTableName(),qb.getAllWhereStatementsForFind(key));
             logger.info("Find query is looking like: {}", sql);
             System.out.println(sql);
             PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -61,7 +61,7 @@ public class GenericDAO {
             //todo
             QueryBuilder qb = new QueryBuilder(type);
             String sql = "select * from %s where %s = %d";
-            sql = String.format(sql,qb.getTableName(), qb.getAllWhereStatements(key));
+            sql = String.format(sql,qb.getTableName(), qb.getAllWhereStatementsForFind(key));
             logger.info("Find query is looking like: {}", sql);
             PreparedStatement pstmt = conn.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();
@@ -72,7 +72,8 @@ public class GenericDAO {
         return null;
     }
 
-    public boolean update(Object key, Object object){
+    //todo small slight problem currently in that if the key isn't assigned into the object, it sets the id by default to 0.
+    public boolean update(Object object, Object key){
         try{
         //Complete object updates only, use only if you have a whole object
         QueryBuilder qb = new QueryBuilder(object);
@@ -88,7 +89,7 @@ public class GenericDAO {
         return false;
     }
 
-    public boolean delete(Object key, Object object) {
+    public boolean delete(Object object, Object key) {
         try {
             if (object == null) {
                 logger.info("User is trying to delete an unknown object");

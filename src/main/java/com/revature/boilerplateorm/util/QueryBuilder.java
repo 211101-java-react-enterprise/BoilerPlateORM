@@ -42,7 +42,7 @@ public class QueryBuilder {
      * Assign the table in which the object belongs to, to the class variable "tableName"
      */
     private void setTableName() {
-        Class<?> clazz = null;
+        Class<?> clazz;
         try {
             clazz = Class.forName(type.getName());
             if(clazz.isAnnotationPresent(Table.class)) {
@@ -110,10 +110,7 @@ public class QueryBuilder {
 
         StringBuilder columnBuilder = new StringBuilder();
 
-        for(int i = 0; i < columns.size(); i++) {
-            columnBuilder.append(columns.get(i)).append(",");
-        }
-
+        columns.forEach(k -> columnBuilder.append(k).append(","));
         logger.info("Column passed out is: " + columnBuilder.substring(0, columnBuilder.length()-1));
         return columnBuilder.substring(0, columnBuilder.length()-1);
     }
@@ -126,9 +123,7 @@ public class QueryBuilder {
 
         StringBuilder valueBuilder = new StringBuilder();
 
-        for (int i = 0; i < columnValues.size(); i++) {
-            valueBuilder.append("'").append(columnValues.get(i)).append("',");
-        }
+        columnValues.forEach(k -> valueBuilder.append("'").append(k).append("',"));
         logger.info("Value passed out is: " + valueBuilder.substring(0, valueBuilder.length()-1));
         return valueBuilder.substring(0,valueBuilder.length()-1);
     }
@@ -160,7 +155,7 @@ public class QueryBuilder {
 
     //this should maybe return a list of type T
     public <T> List<T> parseResultSet(ResultSet rs, Class<T> type) throws SQLException {
-        T parsedObject = null;
+        T parsedObject;
         ResultSetMetaData rsm = rs.getMetaData();
         int columnCount = rsm.getColumnCount();
         ArrayList<T> parsedObjectList = new ArrayList<>();
@@ -189,10 +184,9 @@ public class QueryBuilder {
     /**
      * parses information from the Object key and call stack, to create the proper where statement for the query
      * If the user created method that calls this is without any specific conditions (find), will default to finding with the primary key
-     * If it is created with specific conditions, or right now if the parameter is a DTO, then it will find whatever fields the DTO stores
-     * If it is created with a single specific condition, it will take the field from the user created method, since the input will be an int or String.
+     * Fields are obtained from the user created method, assigning the inputted parameters to the fields in the method name respectively.
      */
-    public String getAllWhereStatements(Object... key) {
+    public String getAllWhereStatementsForFind(Object... key) {
         //looks through the call stack to find out the method that calls the queryBuilder's getAllWhereStatements.
         // [0]Thread#getStackTrace -> [1]queryBuilder#getAllWhereElements -> [2]genericDAO#find -> [3]UserDAO#find
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
@@ -214,8 +208,7 @@ public class QueryBuilder {
             for(int i = 0 ; i < parsedMethod.length; i++) {
                 tempParsedMethod = parsedMethod[i].split("(?=[A-Z])");
                 StringBuilder columnBuilder = new StringBuilder();
-                //I hate this because this means this only works with snake casing naming convention
-                //If we had a "configuration" then this could be fixed but that is out of the scope of this project.
+                //If it is a multi-word object, put am _ to proper fit snake casing
                 for(String z : tempParsedMethod) {
                     columnBuilder.append(z).append("_");
                 }
@@ -224,30 +217,8 @@ public class QueryBuilder {
             }
             outputBuilder.delete(outputBuilder.length()-5, outputBuilder.length());
         }
-        /*
-        //Working with a DTO
-        //else if(key[0].getClass().isAnnotationPresent(DTO.class))... Since this is a custom ORM... we don't necessarily have to follow how Hibernate does it.
-        //We can have our own annotations, so we could make an annotations exclusively for DTOs just to make this a bit easier
-        //Because right now we are facing the problem of this isn't exclusively for DTOs since Strings, Ints etc also have their own fields
-        //Maybe we can just rearrange this with the else statement under this
-        else if(key[0].getClass().getDeclaredFields().length > 1) {
-            logger.info("this is a DTO");
-            //get the fields of the DTO to parse
-            Field[] fields = key[0].getClass().getDeclaredFields();
-            for(Field field : fields) {
-                field.setAccessible(true);
-                try {
-                    outputBuilder.append(field.getName()).append(" = ").append("'").append(field.get(key[0])).append("'").append(" and ");
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            }
-            //remove the last " and " that was appended to the outputBuilder
-            outputBuilder.delete(outputBuilder.length()-5, outputBuilder.length());
-         }
-         */
-         else { // this means we are not working with a DTO but a single int or string
-            //this should be for just findByEmail or findByUsername
+        //This means we are working with only a single value e.g. findByEmail
+         else {
             outputBuilder.append(toParse).append(" = ").append("'").append(key[0]).append("'");
             logger.info("This is a method with a single certain condition, not varargs");
         }
