@@ -8,7 +8,6 @@ import java.sql.*;
 import java.util.List;
 
 public class GenericDAO {
-    //TODO, get a connection from a pool when calling this
     private final Connection conn;
     private static final Logger logger = LogManager.getLogger();
 
@@ -29,8 +28,8 @@ public class GenericDAO {
                 return true;
             }
         } catch (SQLException e) {
-            // TODO logging
-            e.printStackTrace();
+            String s = "Exception: " + e.getClass() + " Error: " + e.getErrorCode() + "Msg: " + e.getMessage();
+            logger.error(s);
         }
         return false;
     }
@@ -48,7 +47,8 @@ public class GenericDAO {
                 return list.get(0);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            String s = "Exception: " + e.getClass() + " Error: " + e.getErrorCode() + "Msg: " + e.getMessage();
+            logger.error(s);
         }
         return null;
     }
@@ -63,13 +63,12 @@ public class GenericDAO {
             ResultSet rs = pstmt.executeQuery();
             return qb.parseResultSet(rs, type);
         } catch (SQLException e) {
-            // TODO logging
-            e.printStackTrace();
+            String s = "Exception: " + e.getClass() + " Error: " + e.getErrorCode() + "Msg: " + e.getMessage();
+            logger.error(s);
         }
         return null;
     }
 
-    //todo small slight problem currently in that if the key isn't assigned into the object, it sets the id by default to 0.
     public boolean update(Object object, Object key){
         try{
         QueryBuilder qb = new QueryBuilder(object);
@@ -79,8 +78,8 @@ public class GenericDAO {
         int rows = conn.prepareStatement(sql).executeUpdate();
         if (rows > 0) return true;
         } catch (SQLException e) {
-            // TODO logging
-            e.printStackTrace();
+            String s = "Exception: " + e.getClass() + " Error: " + e.getErrorCode() + "Msg: " + e.getMessage();
+            logger.error(s);
         }
         return false;
     }
@@ -96,8 +95,8 @@ public class GenericDAO {
             ResultSet rs = pstmt.executeQuery();
             return qb.parseResultSet(rs, type);
         } catch (SQLException e) {
-            // TODO logging
-            e.printStackTrace();
+            String s = "Exception: " + e.getClass() + " Error: " + e.getErrorCode() + "Msg: " + e.getMessage();
+            logger.error(s);
         }
         return null;
     }
@@ -119,7 +118,8 @@ public class GenericDAO {
                 return true;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            String s = "Exception: " + e.getClass() + " Error: " + e.getErrorCode() + "Msg: " + e.getMessage();
+            logger.error(s);
         }
         return false;
     }

@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -57,7 +58,7 @@ public class QueryBuilder {
                 tableName = clazz.getSimpleName();
             }
         } catch (ClassNotFoundException e) {
-            logger.error(e.getMessage());
+            logger.error(e.getClass() + ": " + e.getMessage());
         }
         logger.info("Working on table: {}", tableName);
     }
@@ -86,6 +87,9 @@ public class QueryBuilder {
         logger.info("Column: {}", columns);
     }
 
+    /**
+     * Get the values for the fields from the object that got passed in and assign it to class instance columnValues
+     */
     private void setColumnValuesInfo() {
 
         Field[] fields = type.getDeclaredFields();
@@ -98,7 +102,7 @@ public class QueryBuilder {
                 }
                 columnValues.add(field.get(object).toString());
             } catch (IllegalAccessException e) {
-                logger.error(e.getMessage());
+                logger.error(e.getClass() + ": " + e.getMessage());
             }
         }
 
@@ -164,7 +168,10 @@ public class QueryBuilder {
         return s.substring(0, s.length()-1);
     }
 
-    //this should maybe return a list of type T
+    /**
+     * Parses the given ResultSet for GenericDAO#find and GenericDAO#findAll,
+     * Invokes given class setter methods on an instance of given class type with given ResultSet values
+     */
     public <T> List<T> parseResultSet(ResultSet rs, Class<T> type) throws SQLException {
         T parsedObject;
         ResultSetMetaData rsm = rs.getMetaData();
@@ -187,8 +194,12 @@ public class QueryBuilder {
                 }
                 parsedObject = objectInstance;
                 parsedObjectList.add(parsedObject);
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (SQLException | InvocationTargetException | IllegalAccessException e) {
+                logger.error(e.getClass() + ": " + e.getMessage());
+            } catch (NoSuchMethodException e) {
+                logger.error("You are missing a setter method for one of your fields");
+            } catch (InstantiationException e) {
+                logger.error("You are missing a nullary constructor for your class");
             }
         }
         return parsedObjectList;
