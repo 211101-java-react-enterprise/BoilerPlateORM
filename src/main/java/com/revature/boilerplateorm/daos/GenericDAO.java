@@ -94,7 +94,6 @@ public class GenericDAO {
         return false;
     }
 
-
     public <T> List<T> getAll(Class<T> type){
         try {
             QueryBuilder qb = new QueryBuilder(type);

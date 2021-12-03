@@ -216,34 +216,32 @@ public class QueryBuilder {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         String methodName = stackTraceElements[3].getMethodName();
         StringBuilder outputBuilder = new StringBuilder();
-        //If statement used only if the caller method is called find();
+        //Caller method is called find();
         if(methodName.length() == 4) {
             logger.info("This is a find()");
             return getPrimaryKey() + " = " + key[0];
         }
         //removes the findBy part of the method leaving only field names and conjunctions
-        String toParse = methodName.substring(6);
+        String wholeMethod = methodName.substring(6);
         //working with varargs: dependent on the naming of the method that called this
         if(key.length > 1) {
             logger.info("This is a vararg");
-            String[] parsedMethod = toParse.split("And");
-            String[] tempParsedMethod;
-            String[] realArray = new String[parsedMethod.length];
+            String[] parsedMethod = wholeMethod.split("And");
             for(int i = 0 ; i < parsedMethod.length; i++) {
-                tempParsedMethod = parsedMethod[i].split("(?=[A-Z])");
+                String[] tempParsedMethod = parsedMethod[i].split("(?=[A-Z])");
                 StringBuilder columnBuilder = new StringBuilder();
                 //If it is a multi-word object, put am _ to proper fit snake casing
                 for(String z : tempParsedMethod) {
                     columnBuilder.append(z).append("_");
                 }
-                realArray[i] = columnBuilder.substring(0, columnBuilder.length()-1);
-                outputBuilder.append(realArray[i]).append(" = '").append(key[i]).append("'").append(" and ");
+                String fieldName = columnBuilder.substring(0, columnBuilder.length()-1);
+                outputBuilder.append(fieldName).append(" = '").append(key[i]).append("'").append(" and ");
             }
             outputBuilder.delete(outputBuilder.length()-5, outputBuilder.length());
         }
-        //This means we are working with only a single value e.g. findByEmail
+        //Working with only a single value, key.length = 1 e.g. findByEmail
          else {
-            outputBuilder.append(toParse).append(" = ").append("'").append(key[0]).append("'");
+            outputBuilder.append(wholeMethod).append(" = ").append("'").append(key[0]).append("'");
             logger.info("This is a method with a single certain condition, not varargs");
         }
         logger.info(outputBuilder);
