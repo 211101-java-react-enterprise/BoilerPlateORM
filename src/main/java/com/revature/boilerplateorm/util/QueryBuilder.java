@@ -34,10 +34,8 @@ public class QueryBuilder {
 
     //Constructor for objects
     public QueryBuilder(Object object) {
+        this(object.getClass());
         this.object = object;
-        this.type = object.getClass();
-        setTableName();
-        setColumnsInfo();
         setColumnValuesInfo();
     }
 
@@ -46,9 +44,8 @@ public class QueryBuilder {
      * specified by an annotation in the object's class.
      */
     private void setTableName() {
-        Class<?> clazz;
         try {
-            clazz = Class.forName(type.getName());
+            Class<?> clazz = Class.forName(type.getName());
             if(clazz.isAnnotationPresent(Table.class)) {
                 //Get the name specified in the Table annotation if it is present
                 Table table = clazz.getAnnotation(Table.class);
@@ -64,7 +61,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Assign the field's column name and value to the class variables "columns" and "columnValues" respectively
+     * Assign the class' column names to the list "columns"
      */
     private void setColumnsInfo() {
 
@@ -88,7 +85,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Get the values for the fields from the object that got passed in and assign it to class instance columnValues
+     * Assign the current object's values into the list "columnValues"
      */
     private void setColumnValuesInfo() {
 
