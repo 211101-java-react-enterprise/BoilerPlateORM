@@ -18,11 +18,13 @@ public class GenericDAO {
         pool.setPropertiesFile(props);
     }
 
+    //this needs
     public boolean save(Object object) {
         try{
             QueryBuilder qb = new QueryBuilder(object);
             conn = pool.getConnection();
             String sql = "insert into %s (%s) values (%s)";
+            String sqlTest = "insert into %s (%s) values (?, ?, ?, ?, ?, ?)";
             sql = String.format(sql,qb.getTableName(),qb.getColumns(), qb.getColumnValues());
             logger.info("Save query is looking like: {}", sql);
             PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -38,11 +40,17 @@ public class GenericDAO {
         return false;
     }
 
+    //this needs
     public <T> T find(Class<T> type, Object... key ){
         try {
             QueryBuilder qb = new QueryBuilder(type);
             conn = pool.getConnection();
             String sql = "select * from %s where %s";
+            //give the string sql to QueryBuilder and let it play with it internally rather than pass out values
+            //only build the string past where if the value is not equal to null
+            //                           columnValue------
+            //                           column------    l
+            String sqlTest = "select * from %s where ? = ?, ? = ?";
             sql = String.format(sql,qb.getTableName(),qb.getAllWhereStatementsForFind(key));
             logger.info("Find query is looking like: {}", sql);
             PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -59,6 +67,7 @@ public class GenericDAO {
         return null;
     }
 
+    //this needs
     public <T> List<T> findAll(Class<T> type, Object... key) {
         try {
             QueryBuilder qb = new QueryBuilder(type);
@@ -77,6 +86,26 @@ public class GenericDAO {
         return null;
     }
 
+    //this needs
+    public <T> List<T> findAllNew(Class<T> type, Object... key) {
+        try {
+            QueryBuilder qb = new QueryBuilder(type);
+            conn = pool.getConnection();
+            String sql = "select * from %s where %s";
+            sql = String.format(sql,qb.getTableName(), qb.getColumnEqualQuestion());
+            logger.info("Find query is looking like: {}", sql);
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery();
+            pool.releaseConnection(conn);
+            return qb.parseResultSet(rs, type);
+        } catch (SQLException e) {
+            String s = "Exception: " + e.getClass() + " Error: " + e.getErrorCode() + "Msg: " + e.getMessage();
+            logger.error(s);
+        }
+        return null;
+    }
+
+    //this needs
     public boolean update(Object object, Object key){
         try{
         QueryBuilder qb = new QueryBuilder(object);
@@ -87,6 +116,28 @@ public class GenericDAO {
         int rows = conn.prepareStatement(sql).executeUpdate();
         pool.releaseConnection(conn);
         if (rows > 0) return true;
+        } catch (SQLException e) {
+            String s = "Exception: " + e.getClass() + " Error: " + e.getErrorCode() + "Msg: " + e.getMessage();
+            logger.error(s);
+        }
+        return false;
+    }
+
+    //this needs
+    public boolean updateNew(Object object, Object key){
+        try{
+            QueryBuilder qb = new QueryBuilder(object);
+            conn = pool.getConnection();
+            String sql = "update %s set %s where %s = %d";
+            sql = String.format(sql, qb.getTableName(), qb.getAllColumnEqualQuestion(), qb.getPrimaryKey(), key);
+            System.out.println("SQL : " + sql);
+            logger.info("Update query is looking like: {}", sql);
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt = qb.prepareSql(pstmt);
+            System.out.println("Prepared statement: " + pstmt);
+            int rows = pstmt.executeUpdate();
+            pool.releaseConnection(conn);
+            if (rows > 0) return true;
         } catch (SQLException e) {
             String s = "Exception: " + e.getClass() + " Error: " + e.getErrorCode() + "Msg: " + e.getMessage();
             logger.error(s);
