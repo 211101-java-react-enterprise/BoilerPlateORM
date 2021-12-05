@@ -18,7 +18,9 @@ public class GenericDAO {
         pool.setPropertiesFile(props);
     }
 
-    //this needs
+    /**
+     * @param object is the object to be inserted into the table
+     */
     public boolean save(Object object) {
         try{
             QueryBuilder qb = new QueryBuilder(object);
@@ -41,7 +43,11 @@ public class GenericDAO {
         return false;
     }
 
-    //this needs
+    /**
+     * @param type is the table to be queried
+     * @param key are the different conditions for the query
+     * @return the first found row from the query
+     */
     public <T> T find(Class<T> type, Object... key ){
         try {
             QueryBuilder qb = new QueryBuilder(type);
@@ -65,7 +71,11 @@ public class GenericDAO {
         return null;
     }
 
-    //this needs
+    /**
+     * @param type is the table to be queried
+     * @param key are the different conditions for the query
+     * @return a list of all rows found
+     */
     public <T> List<T> findAll(Class<T> type, Object... key) {
         try {
             QueryBuilder qb = new QueryBuilder(type);
@@ -86,7 +96,10 @@ public class GenericDAO {
         return null;
     }
 
-    //this needs
+    /**
+     * @param object is the object containing updated values
+     * @param key is the primary key value of the row to be updated
+     */
     public boolean update(Object object, Object key){
         try{
             QueryBuilder qb = new QueryBuilder(object);
@@ -109,6 +122,10 @@ public class GenericDAO {
         return false;
     }
 
+    /**
+     * @param type the table to be returned
+     * @return a list of all the rows in the table
+     */
     public <T> List<T> getAll(Class<T> type){
         try {
             QueryBuilder qb = new QueryBuilder(type);
@@ -128,6 +145,11 @@ public class GenericDAO {
         return null;
     }
 
+    /**
+     * aside: doesn't have to be and Object, could be class type instead
+     * @param object row to be deleted
+     * @param key is the primary key value of the row to be deleted
+     */
     public boolean delete(Object object, Object key) {
         try {
             if (object == null) {
