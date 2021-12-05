@@ -36,10 +36,8 @@ public class QueryBuilder {
 
     //Constructor for objects
     public QueryBuilder(Object object) {
+        this(object.getClass());
         this.object = object;
-        this.type = object.getClass();
-        setTableName();
-        setColumnsInfo();
         setColumnValuesInfo();
     }
 
@@ -48,9 +46,8 @@ public class QueryBuilder {
      * specified by an annotation in the object's class.
      */
     private void setTableName() {
-        Class<?> clazz;
         try {
-            clazz = Class.forName(type.getName());
+            Class<?> clazz = Class.forName(type.getName());
             if(clazz.isAnnotationPresent(Table.class)) {
                 //Get the name specified in the Table annotation if it is present
                 Table table = clazz.getAnnotation(Table.class);
@@ -66,7 +63,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Assign the field's column name and value to the class variables "columns" and "columnValues" respectively
+     * Assign the class' column names to the list "columns"
      */
     private void setColumnsInfo() {
 
@@ -90,7 +87,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Get the values for the fields from the object that got passed in and assign it to class instance columnValues
+     * Assign the current object's values into the list "columnValues"
      */
     private void setColumnValuesInfo() {
 
@@ -201,36 +198,34 @@ public class QueryBuilder {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         String methodName = stackTraceElements[3].getMethodName();
         StringBuilder outputBuilder = new StringBuilder();
-        //If statement used only if the caller method is called find();
+        //Caller method is called find();
         if(methodName.length() == 4) {
             logger.info("This is a find()");
             return getPrimaryKey() + " = ?";
         }
         //removes the findBy part of the method leaving only field names and conjunctions
-        String toParse = methodName.substring(6);
+        String wholeMethod = methodName.substring(6);
         //working with varargs: dependent on the naming of the method that called this
         if(key.length > 1) {
             logger.info("This is a vararg");
-            String[] parsedMethod = toParse.split("And");
-            String[] tempParsedMethod;
-            String[] realArray = new String[parsedMethod.length];
+            String[] parsedMethod = wholeMethod.split("And");
             for(int i = 0 ; i < parsedMethod.length; i++) {
-                tempParsedMethod = parsedMethod[i].split("(?=[A-Z])");
+                String[] tempParsedMethod = parsedMethod[i].split("(?=[A-Z])");
                 StringBuilder columnBuilder = new StringBuilder();
                 //If it is a multi-word object, put am _ to proper fit snake casing
                 for(String z : tempParsedMethod) {
                     columnBuilder.append(z).append("_");
                 }
-                realArray[i] = columnBuilder.substring(0, columnBuilder.length()-1);
+                String fieldName = columnBuilder.substring(0, columnBuilder.length()-1);
                 columnValues.add(key[i]);
                 questionMarkCounter++;
-                outputBuilder.append(realArray[i]).append(" = ").append("?").append(" and ");
+                outputBuilder.append(fieldName).append(" = ").append("?").append(" and ");
             }
             outputBuilder.delete(outputBuilder.length()-5, outputBuilder.length());
         }
-        //This means we are working with only a single value e.g. findByEmail
+        //Working with only a single value, key.length = 1 e.g. findByEmail
          else {
-            outputBuilder.append(toParse).append(" = ").append("?");
+            outputBuilder.append(wholeMethod).append(" = ").append("?");
             columnValues.add(key[0]);
             questionMarkCounter++;
             logger.info("This is a method with a single certain condition, not varargs");
@@ -258,8 +253,8 @@ public class QueryBuilder {
     }
 
     /**
-     * Fills out the unknown values in the PreparedStatement
-     * @return returns a PreparedStatement filled out with the appropriate values
+     * Fills out the unknown values in the PreparedStatement with whatever was inserted into the list columnValues
+     * @return returns a finished PreparedStatement
      */
     public PreparedStatement prepareSql(PreparedStatement pstmt) throws SQLException {
 

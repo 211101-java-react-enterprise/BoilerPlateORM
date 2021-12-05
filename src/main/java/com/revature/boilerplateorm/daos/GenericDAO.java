@@ -35,6 +35,7 @@ public class GenericDAO {
             }
         } catch (SQLException e) {
             String s = "Exception: " + e.getClass() + " Error: " + e.getErrorCode() + "Msg: " + e.getMessage();
+            pool.releaseConnection(conn);
             logger.error(s);
         }
         return false;
@@ -58,6 +59,7 @@ public class GenericDAO {
             }
         } catch (SQLException e) {
             String s = "Exception: " + e.getClass() + " Error: " + e.getErrorCode() + "Msg: " + e.getMessage();
+            pool.releaseConnection(conn);
             logger.error(s);
         }
         return null;
@@ -78,6 +80,7 @@ public class GenericDAO {
             return qb.parseResultSet(rs, type);
         } catch (SQLException e) {
             String s = "Exception: " + e.getClass() + " Error: " + e.getErrorCode() + "Msg: " + e.getMessage();
+            pool.releaseConnection(conn);
             logger.error(s);
         }
         return null;
@@ -100,6 +103,7 @@ public class GenericDAO {
             if (rows > 0) return true;
         } catch (SQLException e) {
             String s = "Exception: " + e.getClass() + " Error: " + e.getErrorCode() + "Msg: " + e.getMessage();
+            pool.releaseConnection(conn);
             logger.error(s);
         }
         return false;
@@ -118,6 +122,7 @@ public class GenericDAO {
             return qb.parseResultSet(rs, type);
         } catch (SQLException e) {
             String s = "Exception: " + e.getClass() + " Error: " + e.getErrorCode() + "Msg: " + e.getMessage();
+            pool.releaseConnection(conn);
             logger.error(s);
         }
         return null;
@@ -142,6 +147,7 @@ public class GenericDAO {
             }
         } catch (SQLException e) {
             String s = "Exception: " + e.getClass() + " Error: " + e.getErrorCode() + "Msg: " + e.getMessage();
+            pool.releaseConnection(conn);
             logger.error(s);
         }
         return false;
