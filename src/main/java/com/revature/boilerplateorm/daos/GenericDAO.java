@@ -24,10 +24,10 @@ public class GenericDAO {
             QueryBuilder qb = new QueryBuilder(object);
             conn = pool.getConnection();
             String sql = "insert into %s (%s) values (%s)";
-            String sqlTest = "insert into %s (%s) values (?, ?, ?, ?, ?, ?)";
-            sql = String.format(sql,qb.getTableName(),qb.getColumns(), qb.getColumnValues());
+            sql = String.format(sql,qb.getTableName(),qb.getColumns(), qb.getColumnValuesQuestion());
             logger.info("Save query is looking like: {}", sql);
             PreparedStatement pstmt = conn.prepareStatement(sql);
+            qb.prepareSql(pstmt);
             int rowsInserted = pstmt.executeUpdate();
             pool.releaseConnection(conn);
             if (rowsInserted != 0) {
@@ -46,14 +46,10 @@ public class GenericDAO {
             QueryBuilder qb = new QueryBuilder(type);
             conn = pool.getConnection();
             String sql = "select * from %s where %s";
-            //give the string sql to QueryBuilder and let it play with it internally rather than pass out values
-            //only build the string past where if the value is not equal to null
-            //                           columnValue------
-            //                           column------    l
-            String sqlTest = "select * from %s where ? = ?, ? = ?";
             sql = String.format(sql,qb.getTableName(),qb.getAllWhereStatementsForFind(key));
             logger.info("Find query is looking like: {}", sql);
             PreparedStatement pstmt = conn.prepareStatement(sql);
+            qb.prepareSql(pstmt);
             ResultSet rs = pstmt.executeQuery();
             List<T> list = qb.parseResultSet(rs, type);
             pool.releaseConnection(conn);
@@ -76,25 +72,7 @@ public class GenericDAO {
             sql = String.format(sql,qb.getTableName(), qb.getAllWhereStatementsForFind(key));
             logger.info("Find query is looking like: {}", sql);
             PreparedStatement pstmt = conn.prepareStatement(sql);
-            ResultSet rs = pstmt.executeQuery();
-            pool.releaseConnection(conn);
-            return qb.parseResultSet(rs, type);
-        } catch (SQLException e) {
-            String s = "Exception: " + e.getClass() + " Error: " + e.getErrorCode() + "Msg: " + e.getMessage();
-            logger.error(s);
-        }
-        return null;
-    }
-
-    //this needs
-    public <T> List<T> findAllNew(Class<T> type, Object... key) {
-        try {
-            QueryBuilder qb = new QueryBuilder(type);
-            conn = pool.getConnection();
-            String sql = "select * from %s where %s";
-            sql = String.format(sql,qb.getTableName(), qb.getColumnEqualQuestion());
-            logger.info("Find query is looking like: {}", sql);
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            qb.prepareSql(pstmt);
             ResultSet rs = pstmt.executeQuery();
             pool.releaseConnection(conn);
             return qb.parseResultSet(rs, type);
@@ -107,24 +85,6 @@ public class GenericDAO {
 
     //this needs
     public boolean update(Object object, Object key){
-        try{
-        QueryBuilder qb = new QueryBuilder(object);
-        conn = pool.getConnection();
-        String sql = "update %s set %s where %s = %d";
-        sql = String.format(sql, qb.getTableName(), qb.getColumnEqualValues(), qb.getPrimaryKey(), key);
-        logger.info("Update query is looking like: {}", sql);
-        int rows = conn.prepareStatement(sql).executeUpdate();
-        pool.releaseConnection(conn);
-        if (rows > 0) return true;
-        } catch (SQLException e) {
-            String s = "Exception: " + e.getClass() + " Error: " + e.getErrorCode() + "Msg: " + e.getMessage();
-            logger.error(s);
-        }
-        return false;
-    }
-
-    //this needs
-    public boolean updateNew(Object object, Object key){
         try{
             QueryBuilder qb = new QueryBuilder(object);
             conn = pool.getConnection();
@@ -144,7 +104,6 @@ public class GenericDAO {
         }
         return false;
     }
-
 
     public <T> List<T> getAll(Class<T> type){
         try {
