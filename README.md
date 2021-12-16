@@ -13,3 +13,13 @@ A self built ORM (Object-Relational Mapping) used to handle JDBC calls for our D
 - Log4J
 - JUnit4 & Mockito
 - Jacoco
+
+# Features
+
+- Works with any object types
+- Can query with specific conditions based on user's method name call
+- Built-in connection pool to handle multiple queries at once
+
+# Getting Started
+
+# Usage
