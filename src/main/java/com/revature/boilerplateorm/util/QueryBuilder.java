@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -18,12 +19,13 @@ import java.util.List;
 public class QueryBuilder {
 
     Logger logger = LogManager.getLogger();
-    Object object;
-    Class<?> type;
+    private Object object;
+    private Class<?> type;
+    private int questionMarkCounter = 0;
     private String tableName = "";
     private String primaryKey;
     private final ArrayList<String> columns = new ArrayList<>();
-    private final ArrayList<String> columnValues = new ArrayList<>();
+    private final ArrayList<Object> columnValues = new ArrayList<>();
 
     //Constructor for Class types
     public QueryBuilder(Class<?> type) {
@@ -34,10 +36,8 @@ public class QueryBuilder {
 
     //Constructor for objects
     public QueryBuilder(Object object) {
+        this(object.getClass());
         this.object = object;
-        this.type = object.getClass();
-        setTableName();
-        setColumnsInfo();
         setColumnValuesInfo();
     }
 
@@ -46,9 +46,8 @@ public class QueryBuilder {
      * specified by an annotation in the object's class.
      */
     private void setTableName() {
-        Class<?> clazz;
         try {
-            clazz = Class.forName(type.getName());
+            Class<?> clazz = Class.forName(type.getName());
             if(clazz.isAnnotationPresent(Table.class)) {
                 //Get the name specified in the Table annotation if it is present
                 Table table = clazz.getAnnotation(Table.class);
@@ -64,7 +63,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Assign the field's column name and value to the class variables "columns" and "columnValues" respectively
+     * Assign the class' column names to the list "columns"
      */
     private void setColumnsInfo() {
 
@@ -88,7 +87,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Get the values for the fields from the object that got passed in and assign it to class instance columnValues
+     * Assign the current object's values into the list "columnValues"
      */
     private void setColumnValuesInfo() {
 
@@ -100,7 +99,8 @@ public class QueryBuilder {
                     columnValues.add(null);
                     continue;
                 }
-                columnValues.add(field.get(object).toString());
+                columnValues.add(field.get(object));
+                questionMarkCounter++;
             } catch (IllegalAccessException e) {
                 logger.error(e.getClass() + ": " + e.getMessage());
             }
@@ -127,14 +127,14 @@ public class QueryBuilder {
     }
 
     /**
-     * Converts the arrayListed column values appended together into a single string
-     * @return String value of a readable query component that consists of the column values
+     * Determines the proper amount of question marks needed to set-up a PreparedStatement by the number of columnValues that exist
+     * @return String value of a readable query component that consists of the ?s for a PreparedStatement
      */
-    public String getColumnValues() {
+    public String getColumnValuesQuestion() {
 
         StringBuilder valueBuilder = new StringBuilder();
 
-        columnValues.forEach(k -> valueBuilder.append("'").append(k).append("',"));
+        columnValues.forEach(k -> valueBuilder.append("?").append(","));
         logger.info("Value passed out is: " + valueBuilder.substring(0, valueBuilder.length()-1));
         return valueBuilder.substring(0,valueBuilder.length()-1);
     }
@@ -148,24 +148,6 @@ public class QueryBuilder {
 
     public String getPrimaryKey() {
         return primaryKey;
-    }
-
-    /**
-     * Combination of getColumns() and getValues() for the sql UPDATE
-     * @return String in the format "Column = Value,", skipping nulls
-     */
-    public String getColumnEqualValues() {
-        StringBuilder s = new StringBuilder();
-        for (int i = 0; i < columnValues.size(); i++) {
-            //selective updates
-            if(columnValues.get(i) == null) {
-                logger.info("We're skipping this one " + columns.get(i) + " " + columnValues.get(i));
-                continue;
-            }
-            logger.info("We're adding this one " + columns.get(i) + " " + columnValues.get(i));
-            s.append(columns.get(i)).append(" = ").append("'").append(columnValues.get(i)).append("',");
-        }
-        return s.substring(0, s.length()-1);
     }
 
     /**
@@ -216,38 +198,71 @@ public class QueryBuilder {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         String methodName = stackTraceElements[3].getMethodName();
         StringBuilder outputBuilder = new StringBuilder();
-        //If statement used only if the caller method is called find();
+        //Caller method is called find();
         if(methodName.length() == 4) {
             logger.info("This is a find()");
-            return getPrimaryKey() + " = " + key[0];
+            return getPrimaryKey() + " = ?";
         }
         //removes the findBy part of the method leaving only field names and conjunctions
-        String toParse = methodName.substring(6);
+        String wholeMethod = methodName.substring(6);
         //working with varargs: dependent on the naming of the method that called this
         if(key.length > 1) {
             logger.info("This is a vararg");
-            String[] parsedMethod = toParse.split("And");
-            String[] tempParsedMethod;
-            String[] realArray = new String[parsedMethod.length];
+            String[] parsedMethod = wholeMethod.split("And");
             for(int i = 0 ; i < parsedMethod.length; i++) {
-                tempParsedMethod = parsedMethod[i].split("(?=[A-Z])");
+                String[] tempParsedMethod = parsedMethod[i].split("(?=[A-Z])");
                 StringBuilder columnBuilder = new StringBuilder();
                 //If it is a multi-word object, put am _ to proper fit snake casing
                 for(String z : tempParsedMethod) {
                     columnBuilder.append(z).append("_");
                 }
-                realArray[i] = columnBuilder.substring(0, columnBuilder.length()-1);
-                outputBuilder.append(realArray[i]).append(" = '").append(key[i]).append("'").append(" and ");
+                String fieldName = columnBuilder.substring(0, columnBuilder.length()-1);
+                columnValues.add(key[i]);
+                questionMarkCounter++;
+                outputBuilder.append(fieldName).append(" = ").append("?").append(" and ");
             }
             outputBuilder.delete(outputBuilder.length()-5, outputBuilder.length());
         }
-        //This means we are working with only a single value e.g. findByEmail
+        //Working with only a single value, key.length = 1 e.g. findByEmail
          else {
-            outputBuilder.append(toParse).append(" = ").append("'").append(key[0]).append("'");
+            outputBuilder.append(wholeMethod).append(" = ").append("?");
+            columnValues.add(key[0]);
+            questionMarkCounter++;
             logger.info("This is a method with a single certain condition, not varargs");
         }
         logger.info(outputBuilder);
         return outputBuilder.toString();
+    }
+
+    /**
+     * Combination of getColumns() and ? for the sql UPDATE
+     * @return String in the format "Column = ?,", skipping nulls
+     */
+    public String getAllColumnEqualQuestion() {
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < columnValues.size(); i++) {
+            //selective updates
+            if(columnValues.get(i) == null) {
+                logger.info("We're skipping this one " + columns.get(i) + " " + columnValues.get(i));
+                continue;
+            }
+            logger.info("We're adding this one " + columns.get(i) + " " + columnValues.get(i));
+            s.append(columns.get(i)).append(" = ").append("?, ");
+        }
+        return s.substring(0, s.length()-2);
+    }
+
+    /**
+     * Fills out the unknown values in the PreparedStatement with whatever was inserted into the list columnValues
+     * @return returns a finished PreparedStatement
+     */
+    public PreparedStatement prepareSql(PreparedStatement pstmt) throws SQLException {
+
+        for(int i = 1; i <= questionMarkCounter; i++) {
+            pstmt.setObject(i,columnValues.get(i-1));
+        }
+
+        return pstmt;
     }
 
 }
