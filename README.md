@@ -9,10 +9,11 @@ A self built ORM (Object-Relational Mapping) used to handle JDBC calls for our D
 
 # Technologies Used
 
-- Postgresql
-- Log4J
-- JUnit4 & Mockito
-- Jacoco
+- Postgresql  - 42.2.12
+- Log4J       - 2.14.1
+- JUnit4      - 4.13.2
+- Mockito     - 3.9.0
+- Jacoco      - 0.8.7
 
 # Features
 
