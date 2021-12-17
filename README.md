@@ -16,9 +16,10 @@ A self built ORM (Object-Relational Mapping) used to handle JDBC calls for our D
 
 # Features
 
+- No SQL injections
 - Works with any object types
-- Can query with specific conditions based on user's method name call
 - Built-in connection pool to handle multiple queries at once
+- Can query with specific conditions based on user's method name call
 
 # Getting Started
 
