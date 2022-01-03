@@ -43,18 +43,17 @@ password= Password of your database
   - @Column - Annotation that is used to target the other fields of the model, used to allow user to set the specific name of the column.
 
 - Use built in methods
-  - save - Saves the object to the database
-  - find - Finds the first result of the query given the id
-  - findAll - Finds all the result of the query given the search conditions
-  - update - Updates the row of the current object
-  - getAll - Retrieve all rows of the particular model
-  - delete - Deletes the row containing the given ID
+  - save(Object object) - Saves the object to the database
+  - find(Class clazz, Object... key) - Finds the first result of the query given the id
+  - findAll(Class clazz, Object... key) - Finds all the result of the query given the id
+  - update(Object object, Object key) - Updates the row of the current object
+  - getAll(Class clazz) - Retrieve all rows of the particular model
+  - delete(Object object, Object key) - Deletes the row containing the given ID
 
 - create your own methods using this format
 ```
-public Model findModelByFieldOneAndFieldTwo() {
+public Model findByFieldOneAndFieldTwo() {
     return genericDAO.find(Model.class, fieldOne, fieldTwo);
 }
-
 ```
   
